@@ -1,2 +1,2 @@
-# UDP-XON-XOFF-
-Implementasi XON XOFF pada C
+# XON-XOFF FlowControl
+XON-XOFF Flow Control , implementation on C.
