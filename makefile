@@ -1,3 +1,4 @@
 all:
-	gcc -o transmit transmitter.c -lpthread
-	gcc -o receive receiver.c -lpthread
+    clear
+    gcc -o transmitter transmitter.c -lpthread
+    gcc -o receiver receiver.c -lpthread
