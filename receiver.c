@@ -1,103 +1,128 @@
-#include <netdb.h>
-#include <pthread.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <time.h>
-#include <unistd.h>
+#include "connect.h"
+#include <net/if.h>
+#include <sys/ioctl.h>
 
-#define CONSUMETIME 500 //Delay buffer consumption
-#define BUFFSIZE 8 //Buffer size
-#define UPLIMIT 6 //Upper Limit
-#define LOWLIMIT 2 //Lower Limit
-#define XON 0x11
-#define XOFF 0x13
-#define EndFile 0x1a
+#define BUFFSIZE 8
+#define UPLIMIT 6
+#define LOWLIMIT 2
 
-static char buffer[BUFFSIZE];
-static int bufferCount = 0;
-int isXON = 1;
-int lenSleep = 500 * 1000;
-int receiver_socket;
-int recvlen;
-char buf[BUFFSIZE];
+int isON = 1; //status receiver ON
+int sock; //socket
+int headQueue = 0; //antrian pertama siap dikonsum
+int tailQueue = 0; //space kosong setelah antrian terakhir
+char queue[BUFFSIZE]; //antrian karakter sirkular
 
-struct sockaddr_in receiver;
-struct sockaddr_in sender;
-socklen_t addrlen = sizeof(receiver);
+struct ifreq ifr; //gatau, dapet dari internet
+struct sockaddr_in myaddr; //address program ini sebaga receiver
+struct sockaddr_in trnsmtaddr; //address transmitter
+socklen_t myaddrlen = sizeof(myaddr); //ukuran socket ini
 
 int isEmpty() {
-    return bufferCount == 0 ? 1 : 0;
+    return headQueue == tailQueue ? 1 : 0;
 }
 
-void add(char newentry) {
-    buffer[bufferCount++] = newentry;
-}
-
-static void consume() {
-    if (isEmpty() == 1) {
-        bufferCount--;
-    }
-}
-
-void *thread_func() {
-    for (;;) {
-        if (bufferCount > 0) {
-            bufferCount--;
-        }
-        printf("1 Buffer Consumed (%d left)\n" , bufferCount);
-        if ((bufferCount < LOWLIMIT) && (isXON == 0)) {
-            memset((char*)& buf, 0, sizeof(buf));
-            buf[0] = XON;
-            printf("Mengirim XON\n");
-            if (sendto(receiver_socket, buf, strlen(buf), 0, (struct sockaddr*)& sender, addrlen) < 0) {
-                perror("sendto() failed\n");
-                exit(1);
-            }
-            isXON = 1;
-        }
-        usleep(lenSleep);
-    }
-}
-
-int main() {
-    //buat Soket
-    receiver_socket = socket(AF_INET, SOCK_DGRAM, 0);
-    if (receiver_socket == -1) {
-        printf("Socket creation failed\n");
-        exit(1);
+int isLower() {
+    if (tailQueue >= headQueue) {
+        return tailQueue - headQueue < LOWLIMIT ? 1 : 0;
     } else {
-        printf("Socket berhasil dibuat\n");
+        return tailQueue + BUFFSIZE - headQueue < LOWLIMIT ? 1 : 0;
     }
-    //susun alamat internet kita
-    memset((char*)& receiver, 0, sizeof(receiver)); //clear memory sender_address jadi nol
-    receiver.sin_family = AF_INET; //Setting AF_INET (IPv4)
-    receiver.sin_addr.s_addr = htonl(INADDR_ANY); //IP address local (0)
-    receiver.sin_port = htons(8081);
-    //binding Soket
-    if(bind(receiver_socket, (struct sockaddr*)& receiver, sizeof(receiver)) < 0) {
-        perror("bind() failed\n");
+}
+
+int isUpper() {
+    if (tailQueue >= headQueue) {
+        return tailQueue - headQueue > UPLIMIT ? 1 : 0;
+    } else {
+        return tailQueue + BUFFSIZE - headQueue > UPLIMIT ? 1 : 0;
+    }
+}
+
+void add(char c) {
+    queue[tailQueue++] = c;
+    tailQueue %= BUFFSIZE;
+}
+
+char delete() {
+    char hasil = queue[headQueue++];
+    headQueue %= BUFFSIZE;
+    return hasil;
+}
+
+void sendX(char buffX) {
+    //kirim 1 karakter
+    if (sendto(sock, &buffX, 1, 0, (struct sockaddr*)& trnsmtaddr, myaddrlen) < 0) {
+        printf("sendto() failed.\n");
         exit(1);
     }
-    //do receive
-    pthread_t pth;
-    pthread_create(&pth, NULL, thread_func, "consumer");
-    for (;;) {
-        recvlen = recvfrom(receiver_socket, buf, BUFFSIZE, 0, (struct sockaddr*)& sender, &addrlen);
-        if (recvlen > 0) {
-            printf("Received message: \"%s\"\n", buf);
-            add(buf[1]);
-            if (bufferCount > UPLIMIT) {
-                memset((char*)& buf, 0, sizeof(buf));
-                buf[0] = XOFF;
-                printf("Mengirim XOFF\n");
-                if (sendto(receiver_socket, buf, strlen(buf), 0, (struct sockaddr*)& sender, addrlen) < 0) {
-                    perror("sendto() failed\n");
-                    exit(1);
-                }
-                isXON = 0;
-            }             
+}
+
+void *q_get() {
+    int countByte = 0; //counter karakter
+    int lenSleep = 100000; //jeda saat mengkonsumsi data, 100 ms
+    usleep(lenSleep);
+    //loop selama antrian masih ada
+    while (isEmpty() == 0) {
+        usleep(lenSleep);
+        printf("Mengkonsumsi byte ke-%d: '%c'\n", ++countByte, delete());
+        if (isLower() && isON == 0) { //transmitter bisa lanjutin
+            printf("Buffer < lowerlimit\n");
+            printf("Mengirim XON.\n");
+            sendX(XON);
+            isON = 1;
         }
     }
+}
+
+int main(int argc, char* argv[]) {
+    if (argc == 2) {
+        sock = socket(AF_INET, SOCK_DGRAM, 0);
+        if (sock == -1) {
+            printf("socket() failed.\n");
+            exit(1);
+        }
+        //susun alamat internet kita
+        memset((char*)& myaddr, 0, myaddrlen); //clear memory jadi nol
+        myaddr.sin_family = AF_INET; //setting IPv4
+        myaddr.sin_addr.s_addr = htonl(INADDR_ANY); //IP address local
+        myaddr.sin_port = htons(atoi(argv[1]));
+        //detect ip wireless, http://stackoverflow.com/questions/2283494/get-ip-address-of-an-interface-on-linux
+        ifr.ifr_addr.sa_family = AF_INET;
+        strncpy(ifr.ifr_name, "wlan0", IFNAMSIZ - 1);
+        ioctl(sock, SIOCGIFADDR, &ifr);
+        printf("Binding pada %s:%s ...\n", inet_ntoa(((struct sockaddr_in*)& ifr.ifr_addr) -> sin_addr), argv[1]);
+        if(bind(sock, (struct sockaddr*)& myaddr, myaddrlen) < 0) {
+            printf("bind() failed.\n");
+            exit(1);
+        }
+        //receiving
+        pthread_t pth;
+        int countByte = 0; //counter karakter
+        char buff; //tempat menampung karakter yang diterima
+        //loop sampai break di ENDFILE
+        while (1) {
+            //menerima 1 karakter
+            if (recvfrom(sock, &buff, 1, 0, (struct sockaddr*)& trnsmtaddr, &myaddrlen) > 0) {
+                if (buff == STARTFILE) {
+                    pthread_create(&pth, NULL, q_get, "q_get"); //jalankan thread anak
+                } else if (buff == ENDFILE) {
+                    pthread_join(pth, NULL); //tunggu thread anak selesai
+                    break;
+                } else {
+                    printf("Menerima byte ke-%d.\n", ++countByte);
+                    add(buff);
+                    if (isUpper()) { //transmit menunda pengiriman
+                        printf("Buffer > minimum upperlimit\n");
+                        printf("Mengirim XOFF.\n");
+                        sendX(XOFF);
+                        isON = 0;
+                    }
+                }
+            }
+        }
+        close(sock);
+    } else { //arg invalid
+        printf("Usage : ./receiver port\n");
+        exit(1);
+    }
+    return 0;
 }
