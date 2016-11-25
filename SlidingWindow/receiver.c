@@ -8,6 +8,10 @@
 #define LOWLIMIT 2
 
 
+int sensitiveReading;
+
+
+
 unsigned char checksum (unsigned char *ptr, size_t sz) {
     unsigned char chk = 0;
     while (sz-- != 0) {
@@ -225,7 +229,7 @@ void *frameIdentifier(){
 
         if (getByte() == SOH) {
             insertArray(&tempFrame, SOH);
-            //printf("[FRAMEIDENTIFIER]   SOH detected!\n");
+            printf("[FRAMEIDENTIFIER]   SOH detected!\n");
 
             unsigned char frameID[4];
             frameID[0] = getByte();
@@ -239,16 +243,16 @@ void *frameIdentifier(){
             insertArray(&tempFrame, frameID[3]);
 
             int t_num = *((int*) frameID);
-            //printf("[FRAMEIDENTIFIER]  lengkap! %x %x %x %x \n", frameID[0], frameID[1], frameID[2], frameID[3]);
-            //printf("[FRAMEIDENTIFIER]  NOMOR SAYA : %d \n" , t_num);
+            printf("[FRAMEIDENTIFIER]  lengkap! %x %x %x %x \n", frameID[0], frameID[1], frameID[2], frameID[3]);
+            printf("[FRAMEIDENTIFIER]  NOMOR SAYA : %d \n" , t_num);
 
             if (getByte() == STX ) {
-                //printf("[FRAMEIDENTIFIER]   STX detected!\n");
+                printf("[FRAMEIDENTIFIER]   STX detected!\n");
                 insertArray(&tempFrame, STX);
                 unsigned char realText = getByte();
                 int counter  = 0;
                 while ((realText != ETX) && (counter < FRAMEDATASIZE)) {
-                    //printf("[FRAMEIDENTIFIER]  Isi data frame no %d :  %c \n" , counter + 1 , realText);
+                    printf("[FRAMEIDENTIFIER]  Isi data frame no %d :  %c \n" , counter + 1 , realText);
                     insertArray(&tempFrame, realText);
                     insertArray(&tempText, realText);
                     counter++;
@@ -332,6 +336,7 @@ void *q_get() {
             //printf("Mengkonsumsi byte ke-%d: '%x'\n", ++countByte, getfromstack);
             insertArray(&receivedBytes, getfromstack);
 
+            printf("RECEIVED BYTES! :  %x \n", getfromstack);
             /*
             int k = 0;
             for ( k = 0 ; k < receivedBytes.used ; k++) {
@@ -385,28 +390,35 @@ int main(int argc, char* argv[]) {
         pthread_t pth2;
         int countByte = 0; //counter karakter
         char buff; //tempat menampung karakter yang diterima
+
+
         //loop sampai break di ENDFILE
         while (1) {
             //menerima 1 karakter
             if (recvfrom(sock, &buff, 1, 0, (struct sockaddr*)& trnsmtaddr, &myaddrlen) > 0) {
+                 add(buff);
+
                 if (buff == STARTFILE) {
                     pthread_create(&pth, NULL, q_get, "q_get"); //jalankan thread 
                     pthread_create(&pth2, NULL, frameIdentifier, "fid"); //jalankan thread anak
+                    printf("Thread started!\n");
+
                 } else if (buff == ENDFILE) {
                     printf("END BRO!");
                     //pthread_join(pth, NULL); //tunggu thread anak selesai
                     printf("Done?!\n");
 
-                     int k = 0;
+                    /*
+                    int k = 0;
                     for ( k = 0 ; k < receivedBytes.used ; k++) {
                         printf("%x " , receivedBytes.array[k]);
                     }
-                   
+                    */
 
                     break;
                 } else {
                     //printf("Menerima byte ke-%d : %x.\n", ++countByte , buff);
-                    add(buff);
+                   
                     if (isUpper()) { //transmit menunda pengiriman
                         printf("Buffer > minimum upperlimit\n");
                         printf("Mengirim XOFF.\n");

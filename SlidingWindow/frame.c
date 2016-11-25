@@ -1,4 +1,5 @@
 #include "connect.h"
+#include <time.h>
 
 unsigned char ** frames;
 int sock; //socket
@@ -20,11 +21,24 @@ unsigned char checksum (unsigned char *ptr, size_t sz) {
 
 
 
+void waitFor (unsigned int secs) {
+    unsigned int retTime = time(0) + secs;   // Get finishing time.
+    while (time(0) < retTime);               // Loop until it arrives.
+}
+
+
+
 typedef struct {
   unsigned char *array;
   size_t used;
   size_t size;
 } Array;
+
+int * sentFrames;
+int bottomPointer;
+int topPointer;
+int nframe;
+
 
 
 Array receivedBytes;
@@ -157,6 +171,9 @@ unsigned char getByte() {
 }
 
 
+
+
+
 void *ackIdentifier(){
     Array tempFrame;
     initArray(&tempFrame, 5);
@@ -187,6 +204,17 @@ void *ackIdentifier(){
             unsigned char computed_csum = checksum(tempFrame.array , tempFrame.used);
             if (csum == computed_csum) {
                 printf("ACK %d diterima \n" , t_num);
+                sentFrames[t_num] = 2;
+
+                int k =0;
+                for (k = 0 ; k < nframe ; k++){
+                    printf("%d ", sentFrames[k]);
+                };
+                printf("\n");
+
+                printf("is done? : %d\n", isDone());
+
+                
 
             }
 
@@ -196,14 +224,6 @@ void *ackIdentifier(){
         freeArray(&tempFrame);
 
     }
-
-
-
-    
-
-
-
-
 }
 
 
@@ -244,7 +264,8 @@ void sendChar(char buff) {
 }
 
 
-void sendFrame(unsigned char * frame) {
+
+void sendFrameData(unsigned char * frame) {
     //kirim 1 karakter
     int i = 0;
     unsigned char buf;
@@ -268,9 +289,95 @@ void sendFrame(unsigned char * frame) {
 
 
 
+
+void sendFrame(int framenumber){
+    sendFrameData(frames[framenumber]);
+    sentFrames[framenumber] = 1;
+    printf("Send frame %d selesai\n", framenumber);
+     int k =0;
+    for (k = 0 ; k < nframe ; k++){
+        printf("%d ", sentFrames[k]);
+    };
+    printf("\n");
+
+
+}
+
+
+int isDone(){
+    int i = 0;
+    int count =0;
+    int stop = 0;
+    while ((i < nframe) && (!stop)) {
+        if ( sentFrames[i] == 2){
+            i++;
+        }
+        else {
+            stop = 1;
+        }
+    }
+
+    return !stop;
+
+}
+
+
+void *slidingWindowMgr(){
+    bottomPointer = 0;
+    topPointer = 0 + WINDOWSIZE;
+    int i;
+    int moveCounter;
+
+    while (!isDone()) {
+
+        i = bottomPointer;
+        printf("Cold booting\n");
+        //sending frames to receiver
+        while (( i < topPointer) && (isDone() == 0) && (i < nframe)) {
+            if (sentFrames[i] != 2) {
+                sendFrame(i);
+                printf("%d - %d Mengirim frame %d\n" ,bottomPointer, topPointer, i);
+            }
+            else {
+                printf("Tidak mengirim frame %d\n" , i);
+            }
+            printf("i : %d",i);
+            i++;
+        }
+
+        printf("KLOTER TERKIRIM!  %d - %d \n", bottomPointer, topPointer );
+        printf("Sleep for 1sec\n");
+        //timeout
+        waitFor(1);
+        printf("Wake up!\n");
+
+        if (isDone()){
+            printf("Sudah selesai :)\n");
+            sendChar(ENDFILE);
+            break;
+        }
+
+        //adjusting bottomPointer;
+        i = bottomPointer;
+        moveCounter = 0;
+        while (sentFrames[i] == 2){
+            i++;
+            moveCounter++;
+        }
+
+        //adjusting both pointer;
+        bottomPointer += moveCounter;
+        topPointer += moveCounter;
+    }
+}
+
+
+
+
+
 int main(int argc, char* argv[]){
 
-
+    int i;
     initArray(&receivedBytes, 5);
 
 
@@ -308,19 +415,29 @@ int main(int argc, char* argv[]){
         exit(1);
     }
 
-    int nframe = getNumFrame(filelen);
+    nframe = getNumFrame(filelen);
     int k = 0;
+
+    sentFrames = (int *)malloc(nframe * sizeof(int));
+
+    for(i = 0 ; i < nframe ; i++){
+        sentFrames[i] = 0;
+    }
+
 
 
     pthread_t pth;
     pthread_t pth2;
+    pthread_t pth3;
+    sendChar(STARTFILE);
     pthread_create(&pth, NULL, xHandler, "xHandler");
     pthread_create(&pth2, NULL, ackIdentifier, "fid");
-    sendChar(STARTFILE);
+    pthread_create(&pth3, NULL, slidingWindowMgr, "slidingwindow");
+    
 
 
 
-    int i = 0;
+   
 
     /*
     for ( i = 0 ; i < nframe; i++ ){
@@ -329,16 +446,21 @@ int main(int argc, char* argv[]){
     */
 
     
-    sendFrame(frames[0]);
-    sendFrame(frames[1]);
-    sendFrame(frames[2]);
-    sendFrame(frames[3]);
+   
+
     
 
 
     printf("kirim end!");
 
     for (;;){
+
+        i = 0;
+        for(i = 0 ; i < nframe ; i++){
+            printf("%d ", sentFrames[i]);
+        }
+        printf("\n");
+        sleep(1);
 
     }
     //sendChar(ENDFILE);
