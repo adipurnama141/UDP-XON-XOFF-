@@ -1,7 +1,7 @@
 #include "array.c"
 #include <time.h>
 
-unsigned char ** frames;
+unsigned char** frames;
 int sock; //socket
 struct sockaddr_in recvaddr; //address receiver
 int recvlen = sizeof(recvaddr); //ukuran socket receiver
@@ -9,72 +9,53 @@ int isON = 1; //status receiver ON
 int bottomPointer;
 int nFrame;
 int topPointer;
-int* sentFrames;
+int* statusFrame;
 Array receivedBytes;
 int processedIncomingBytes;
 
-/* PENGAKSESAN ARRAY */
 unsigned char countChecksum(unsigned char* ptr, size_t sz) {
     unsigned char chk = 0;
     while (sz-- != 0) {
         chk -= *ptr++;
     }
-    /*debug*/ printf("[COUNT CHECKSUM] %x\n", chk);
+    /*debug*/printf("[COUNTCHECKSUM] %x\n", chk);
     return chk;
 }
 
 unsigned char getByte() {
-    while(processedIncomingBytes >= receivedBytes.used) {
-        //wait until new incoming byte
-    }
+    while(processedIncomingBytes >= receivedBytes.used); //wait until new incoming byte
     unsigned char result = receivedBytes.data[processedIncomingBytes++];
-    /*debug*/ printf("[GET BYTE] %x\n", result);
+    /*debug*/printf("[GETBYTE] %x\n", result);
     return result;
 }
 
-void sendByte(char buff) {
-    //kirim 1 karakter
-    if (sendto(sock, &buff, 1, 0, (struct sockaddr*)& recvaddr, recvlen) == -1) {
+void sendByte(char buffX) {
+    /*debug*/printf("[SENDBYTE] %x\n", buffX);
+    if (sendto(sock, &buffX, 1, 0, (struct sockaddr*)& recvaddr, recvlen) < 0) {
         printf("sendto() failed.\n");
         exit(1);
     }
 }
 
-void sendFrameData(unsigned char* frame) {
-    //kirim 1 karakter
+void sendFrame(int framenumber) {
+    unsigned char* frame = frames[framenumber];
     int i = 0;
-    unsigned char buf;
+    unsigned char sendchar;
+    /*debug*/printf("[SENDFRAME]\n");
     while (i < FRAMESIZE) {
         if (isON) {
-            buf = frame[i];
-            //printf("Sending %x\n", buf);
-            if (sendto(sock, &buf, 1, 0, (struct sockaddr*)& recvaddr, recvlen) == -1) {
-                printf("sendto() failed.\n");
-                //exit(1);
-            }
-            usleep(500);
-            i++;
+            sendByte(frame[i++]);
         } else {
-            printf("Waiting for XON!\n");
+            printf("Menunggu XON...\n");
         }
     }
-}
-
-void sendFrame(int framenumber) {
-    sendFrameData(frames[framenumber]);
-    sentFrames[framenumber] = 1;
-    printf("Send frame %d selesai\n", framenumber);
-    int k =0;
-    for (k = 0; k < nFrame; k++) {
-        printf("%d ", sentFrames[k]);
-    }
-    printf("\n");
+    statusFrame[framenumber] = 1;
 }
 
 int isDone() {
     int i = 0;
     while (i < nFrame) {
-        if (sentFrames[i] == 2) {
+        if (statusFrame[i] == 2) {
             i++;
         } else {
             return 0;
@@ -85,11 +66,10 @@ int isDone() {
 
 void waitFor(unsigned int secs) {
     unsigned int retTime = time(0) + secs; //get finishing time
-    while (time(0) < retTime) {
-        //loop until it arrives
-    }
+    while (time(0) < retTime); //loop until it arrives
 }
 
+/* ===== FILE ===== */
 unsigned char** createArray(int sizeX, int sizeY) {
     int i;
     unsigned char** result = (unsigned char**) malloc(sizeX * sizeof(unsigned char*));
@@ -107,12 +87,7 @@ int getNumFrame(int filelen){
     }
 }
 
-
-//FRAMER
-//Menerima file dan panjang file
-//Menghasilkan array of frame
-unsigned char** framer(char * buffFile , int filelen)
-{
+unsigned char** parseToFrames(char* buffFile, int filelen) {
     int nFrame = 0;
     int datapointer = 0;
     int bytesLeft = 0;
@@ -164,87 +139,54 @@ unsigned char** framer(char * buffFile , int filelen)
     return frames;
 }
 
-void *ackIdentifier(){
-    Array tempFrame;
-    initArray(&tempFrame, 5);
-    unsigned char currentByteCheck;
-    //printf("[FRAMEIDENTIFIER]  SAYA AKTIFF!!\n");
-    for(;;){
-
-        if (getByte() == ACK) {
-            insertArray(&tempFrame, ACK);
-            //printf("[FRAMEIDENTIFIER]   SOH detected!\n");
-
-            unsigned char frameID[4];
-            frameID[0] = getByte();
-            frameID[1] = getByte();
-            frameID[2] = getByte();
-            frameID[3] = getByte();
-
-            insertArray(&tempFrame, frameID[0]);
-            insertArray(&tempFrame, frameID[1]);
-            insertArray(&tempFrame, frameID[2]);
-            insertArray(&tempFrame, frameID[3]);
-
-            int t_num = *((int*) frameID);
-            //printf("[FRAMEIDENTIFIER]  lengkap! %x %x %x %x \n", frameID[0], frameID[1], frameID[2], frameID[3]);
-            //printf("[FRAMEIDENTIFIER]  NOMOR SAYA : %d \n" , t_num);
-
-            unsigned char csum = getByte();
-            unsigned char computed_csum = countChecksum(tempFrame.array , tempFrame.used);
-            if (csum == computed_csum) {
-                printf("ACK %d diterima \n" , t_num);
-                sentFrames[t_num] = 2;
-
-                int k =0;
-                for (k = 0 ; k < nFrame ; k++){
-                    printf("%d ", sentFrames[k]);
-                };
-                printf("\n");
-
-                printf("is done? : %d\n", isDone());
-
-                
-
-            }
-
-
-            }
-                
-        freeArray(&tempFrame);
-
-    }
-}
-
-
-
-
-
-
-void *xHandler() {
-    char buffX; //karakter XON XOFF
+/* ===== THREAD ===== */
+void* byteHandler() {
+    char rcvchar;
     //loop sampai terminate
     while (1) {
-        //terima 1 karakter (XON atau XOFF)
-        if (recvfrom(sock, &buffX, 1, 0, (struct sockaddr*)& recvaddr, &recvlen) > 0) {
-
-            if (buffX == XON) {
+        if (recvfrom(sock, &rcvchar, 1, 0, (struct sockaddr*)& recvaddr, &recvlen) > 0) {
+            if (rcvchar == XON) {
                 printf("XON diterima.\n");
                 isON = 1;
-            } else if (buffX == XOFF) {
+            } else if (rcvchar == XOFF) {
                 printf("XOFF diterima.\n");
                 isON = 0;
-            }
-            else {
-                //printf("Receiving : %x \n" , buffX);
-                insertArray(&receivedBytes, buffX);
-
+            } else { //ACK
+                /*debug*/printf("[BYTEHANDLER] %x\n", rcvchar);
+                insertArray(&receivedBytes, rcvchar);
             }
         }
     }
 }
 
-void *slidingWindowMgr(){
+void* ACKHandler() {
+    Array tempFrame;
+    initArray(&tempFrame, 5);
+    //loop sampai terminate
+    while (1) {
+        if (getByte() == ACK) {
+            insertArray(&tempFrame, ACK);
+            /*debug*/printf("[ACKHANDLER] ACK\n");
+            //ambil 4 byte lalu jadikan integer
+            unsigned char frameID[4];
+            int i;
+            for (i = 0; i < 4; i++) {
+                frameID[i] = getByte();
+                insertArray(&tempFrame, frameID[i]);
+                /*debug*/printf("[ACKHANDLER] ID %d %x\n", i, frameID[i]);
+            }
+            int t_num = *((int*) frameID);
+            /*debug*/printf("[ACKHANDLER] ID %d\n", t_num);
+            if (getByte() == countChecksum(tempFrame.array, tempFrame.used)) {
+                statusFrame[t_num] = 2;
+                /*debug*/printf("[ACKHANDLER] ACK received ");
+            }
+            freeArray(&tempFrame);
+        }
+    }
+}
+
+void* slidingWindow(){
     bottomPointer = 0;
     topPointer = 0 + WINDOWSIZE;
     int i;
@@ -256,7 +198,7 @@ void *slidingWindowMgr(){
         printf("Cold booting\n");
         //sending frames to receiver
         while (( i < topPointer) && (isDone() == 0) && (i < nFrame)) {
-            if (sentFrames[i] != 2) {
+            if (statusFrame[i] != 2) {
                 sendFrame(i);
                 printf("%d - %d Mengirim frame %d\n" ,bottomPointer, topPointer, i);
             }
@@ -282,7 +224,7 @@ void *slidingWindowMgr(){
         //adjusting bottomPointer;
         i = bottomPointer;
         moveCounter = 0;
-        while (sentFrames[i] == 2){
+        while (statusFrame[i] == 2){
             i++;
             moveCounter++;
         }
@@ -293,41 +235,16 @@ void *slidingWindowMgr(){
     }
 }
 
-
-
-
-
-int main(int argc, char* argv[]){
-
-    int i;
+/* ===== MAIN PROGRAM ===== */
+int main(int argc, char* argv[]) {
     initArray(&receivedBytes, 5);
 
-
-    //buka file
-    FILE* file = fopen("tes.txt","rb");
-
-    //cari panjang file
-    fseek(file, 0, SEEK_END);
-    int filelen = ftell(file);
-    rewind(file);
-
-    //pindah file ke memori
-    char* buffFile = (char*) malloc(filelen + 1); 
-    fread(buffFile, filelen, 1, file);
-
-    //ubah file jadi frame
-    frames = framer(buffFile,filelen);
-
-    //persiapan kirim broh!
-  
-
-
+    printf("Membuat socket untuk koneksi ke %s:%s ...\n", argv[1], argv[2]);
     sock = socket(AF_INET, SOCK_DGRAM, 0);
-        if (sock == -1) {
-            printf("socket() failed.\n");
-            exit(1);
-        }
-
+    if (sock == -1) {
+        printf("socket() failed.\n");
+        exit(1);
+    }
     //setting address receiver
     memset((char*)& recvaddr, 0, recvlen); //zero-ing
     recvaddr.sin_family = AF_INET;
@@ -336,67 +253,32 @@ int main(int argc, char* argv[]){
         printf("inet_aton() failed.\n");
         exit(1);
     }
-
+    //akses file yang akan dikirim
+    FILE* file = fopen("tes.txt","rb");
+    fseek(file, 0, SEEK_END);
+    int filelen = ftell(file);
+    rewind(file);
+    char* buffFile = (char*) malloc(filelen + 1); //file dipindah ke memori
+    fread(buffFile, filelen, 1, file);
+    fclose(file);
+    //ubah data menjadi frame-frame
+    frames = parseToFrames(buffFile, filelen);
     nFrame = getNumFrame(filelen);
-    int k = 0;
-
-    sentFrames = (int *)malloc(nFrame * sizeof(int));
-
-    for(i = 0 ; i < nFrame ; i++){
-        sentFrames[i] = 0;
+    statusFrame = (int*) malloc(nFrame * sizeof(int));
+    int i;
+    for(i = 0; i < nFrame; i++) {
+        statusFrame[i] = 0;
     }
-
-
-
-    pthread_t pth;
-    pthread_t pth2;
-    pthread_t pth3;
+    //jalankan handler
+    pthread_t tByteHandler;
+    pthread_t tACKHandler;
+    pthread_t tSlidingWindow;
+    pthread_create(&tByteHandler, NULL, byteHandler, "byteHandler");
+    pthread_create(&tACKHandler, NULL, ACKHandler, "ACKHandler");
+    pthread_create(&tSlidingWindow, NULL, slidingWindow, "slidingWindow");
     sendByte(STARTFILE);
-    pthread_create(&pth, NULL, xHandler, "xHandler");
-    pthread_create(&pth2, NULL, ackIdentifier, "fid");
-    pthread_create(&pth3, NULL, slidingWindowMgr, "slidingwindow");
-    
-
-
-
-   
-
-    /*
-    for ( i = 0 ; i < nFrame; i++ ){
-        sendFrame(frames[i]);
-    }
-    */
-
-    
-   
-
-    
-
-
-    printf("kirim end!");
-
-    for (;;){
-
-        i = 0;
-        for(i = 0 ; i < nFrame ; i++){
-            printf("%d ", sentFrames[i]);
-        }
-        printf("\n");
-        sleep(1);
-
-    }
-    //sendByte(ENDFILE);
-    /*
-    while (k < nFrame){
-        sendFrame(frames[k]);
-
-    }
-    k++;
-    */
-            
-    
-
-   
-   
-
+    pthread_join(tSlidingWindow, NULL);
+    pthread_cancel(tACKHandler);
+    pthread_cancel(tByteHandler);
+    sendByte(ENDFILE);
 }

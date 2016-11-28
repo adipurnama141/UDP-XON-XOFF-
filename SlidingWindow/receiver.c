@@ -126,26 +126,20 @@ void* frameHandler() {
     while (1) {
         if (getByte() == SOH) {
             insertArray(&tempFrame, SOH);
-            /*debug*/printf("[FRAMEIDENTIFIER] SOH\n");
+            /*debug*/printf("[FRAMEHANDLER] SOH\n");
             //ambil 4 byte lalu jadikan integer
             unsigned char frameID[4];
-            frameID[0] = getByte();
-            frameID[1] = getByte();
-            frameID[2] = getByte();
-            frameID[3] = getByte();
             int i;
             for (i = 0; i < 4; i++) {
-                /*debug*/printf("[FRAMEIDENTIFIER] ID %d %x\n", i, frameID[i]);
+                frameID[i] = getByte();
+                insertArray(&tempFrame, frameID[i]);
+                /*debug*/printf("[FRAMEHANDLER] ID %d %x\n", i, frameID[i]);
             }
-            insertArray(&tempFrame, frameID[0]);
-            insertArray(&tempFrame, frameID[1]);
-            insertArray(&tempFrame, frameID[2]);
-            insertArray(&tempFrame, frameID[3]);
             int t_num = *((int*) frameID);
-            /*debug*/printf("[FRAMEIDENTIFIER] ID %d\n", t_num);
+            /*debug*/printf("[FRAMEHANDLER] ID %d\n", t_num);
             if (getByte() == STX ) {
                 insertArray(&tempFrame, STX);
-                /*debug*/printf("[FRAMEIDENTIFIER] STX\n");
+                /*debug*/printf("[FRAMEHANDLER] STX\n");
                 //ambil data
                 int countLength = 0;
                 unsigned char realText;
@@ -153,12 +147,12 @@ void* frameHandler() {
                     realText = getByte();
                     if (realText == ETX) {
                         insertArray(&tempFrame, ETX);
-                        /*debug*/printf("[FRAMEIDENTIFIER] ETX\n");
+                        /*debug*/printf("[FRAMEHANDLER] ETX\n");
                         if (getByte() == countChecksum(tempFrame.data, tempFrame.used)) {
                             thisFrame.id = t_num;
                             thisFrame.length = countLength;
                             int i;
-                            /*debug*/printf("[FRAMEIDENTIFIER] frame received: ");
+                            /*debug*/printf("[FRAMEHANDLER] frame received: ");
                             for (i = 0; i < tempText.used; i++) {
                                 printf("%c", tempText.data[i]);
                                 thisFrame.text[i] = tempText.data[i];
@@ -172,12 +166,12 @@ void* frameHandler() {
                     //bukan ETX
                     insertArray(&tempFrame, realText);
                     insertArray(&tempText, realText);
-                    /*debug*/printf("[FRAMEIDENTIFIER] DATA %x\n", realText);
+                    /*debug*/printf("[FRAMEHANDLER] DATA %x\n", realText);
                 } while(countLength < FRAMEDATASIZE);
             }
+            freeArray(&tempText);
+            freeArray(&tempFrame);
         }
-        freeArray(&tempText);
-        freeArray(&tempFrame);
     }
 }
 
