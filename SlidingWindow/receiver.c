@@ -6,74 +6,40 @@
 #define UPLIMIT 254
 #define LOWLIMIT 2
 
+int isON = 1; //status receiver ON
+/*socket*/
+int sock; //socket
 struct ifreq ifr; //gatau, dapet dari internet
 struct sockaddr_in myaddr; //address program ini sebaga receiver
 struct sockaddr_in trnsmtaddr; //address transmitter
-
-Array receivedBytes;
-ArrayFrame receivedFrames;
+socklen_t myaddrlen = sizeof(myaddr); //ukuran socket ini
+/*buffer*/
 char queue[BUFFSIZE]; //antrian karakter sirkular
 int headQueue = 0; //antrian pertama siap dikonsum
-int isON = 1; //status receiver ON
-int processedIncomingBytes;
-int sensitiveReading;
-int sock; //socket
 int tailQueue = 0; //space kosong setelah antrian terakhir
-socklen_t myaddrlen = sizeof(myaddr); //ukuran socket ini
+/*array*/
+Array receivedBytes;
+ArrayFrame receivedFrames;
+int processedIncomingBytes;
 
-/* ADT QUEUE */
-int isEmpty() {
-    return headQueue == tailQueue ? 1 : 0;
-}
-
-int isLower() {
-    if (tailQueue >= headQueue) {
-        return tailQueue - headQueue < LOWLIMIT ? 1 : 0;
-    } else {
-        return tailQueue + BUFFSIZE - headQueue < LOWLIMIT ? 1 : 0;
-    }
-}
-
-int isUpper() {
-    if (tailQueue >= headQueue) {
-        return tailQueue - headQueue > UPLIMIT ? 1 : 0;
-    } else {
-        return tailQueue + BUFFSIZE - headQueue > UPLIMIT ? 1 : 0;
-    }
-}
-
-void add(char c) {
-    queue[tailQueue++] = c;
-    tailQueue %= BUFFSIZE;
-}
-
-char delete() {
-    char hasil = queue[headQueue++];
-    headQueue %= BUFFSIZE;
-    return hasil;
-}
-
-/* PENGAKSESAN ARRAY */
 unsigned char countChecksum(unsigned char* ptr, size_t sz) {
     unsigned char chk = 0;
     while (sz-- != 0) {
         chk -= *ptr++;
     }
-    /*debug*/ printf("[COUNT CHECKSUM] %x\n", chk);
+    /*debug*/printf("[COUNTCHECKSUM] %x\n", chk);
     return chk;
 }
 
 unsigned char getByte() {
-    while(processedIncomingBytes >= receivedBytes.used) {
-        //wait until new incoming byte
-    }
+    while(processedIncomingBytes >= receivedBytes.used); //wait until new incoming byte
     unsigned char result = receivedBytes.data[processedIncomingBytes++];
-    /*debug*/ printf("[GET BYTE] %x\n", result);
+    /*debug*/printf("[GETBYTE] %x\n", result);
     return result;
 }
 
 void sendByte(char buffX) {
-    //kirim 1 karakter
+    /*debug*/printf("[SENDBYTE] %x\n", buffX);
     if (sendto(sock, &buffX, 1, 0, (struct sockaddr*)& trnsmtaddr, myaddrlen) < 0) {
         printf("sendto() failed.\n");
         exit(1);
@@ -90,15 +56,68 @@ void sendACK(int fnum) {
     ackpacket[1] = fnum & 0xFF;
     ackpacket[5] = countChecksum(ackpacket , 5);
     //send
+    /*debug*/printf("[SENDACK]\n");
     int i = 0;
     while (i < 6) {
-    	/*debug*/ printf("[SEND ACK] %d %x\n", i, ackpacket[i]);
         sendByte(ackpacket[i++]);
     }
 }
 
-void* frameIdentifier() {
-	FrameData thisFrame;
+/* ===== ADT QUEUE ===== */
+int isBufferEmpty() {
+    return headQueue == tailQueue ? 1 : 0;
+}
+
+int isBufferLowLimit() {
+    if (tailQueue >= headQueue) {
+        return tailQueue - headQueue < LOWLIMIT ? 1 : 0;
+    } else {
+        return tailQueue + BUFFSIZE - headQueue < LOWLIMIT ? 1 : 0;
+    }
+}
+
+int isBufferUpLimit() {
+    if (tailQueue >= headQueue) {
+        return tailQueue - headQueue > UPLIMIT ? 1 : 0;
+    } else {
+        return tailQueue + BUFFSIZE - headQueue > UPLIMIT ? 1 : 0;
+    }
+}
+
+void addToBuffer(char c) {
+    /*debug*/printf("[ADDTOBUFFER] %x\n", c);
+    queue[tailQueue++] = c;
+    tailQueue %= BUFFSIZE;
+}
+
+char delFromBuffer() {
+    char result = queue[headQueue++];
+    headQueue %= BUFFSIZE;
+    /*debug*/printf("[DELFROMBUFFER] %x\n", result);
+    return result;
+}
+
+/* ===== THREAD ===== */
+void* byteHandler() {
+    int lenSleep = 100000; //jeda saat mengkonsumsi data, nanosecond
+    //loop selama antrian masih ada
+    while (1) {
+        while (isBufferEmpty() == 0) {
+            unsigned char rcvchar = delFromBuffer();
+            insertArray(&receivedBytes, rcvchar);
+            /*debug*/printf("[BYTEHANDLER] %x\n", rcvchar);
+            if (isBufferLowLimit() && isON == 0) { //transmitter bisa lanjutin
+                printf("Buffer < lowerlimit\n");
+                printf("Mengirim XON.\n");
+                sendByte(XON);
+                isON = 1;
+            }
+        }
+    }
+}
+
+void* frameHandler() {
+    FrameData thisFrame;
     Array tempFrame;
     Array tempText;
     initArray(&tempFrame, 5);
@@ -107,7 +126,7 @@ void* frameIdentifier() {
     while (1) {
         if (getByte() == SOH) {
             insertArray(&tempFrame, SOH);
-            /*debug*/ printf("[FRAME IDENTIFIER] SOH\n");
+            /*debug*/printf("[FRAMEIDENTIFIER] SOH\n");
             //ambil 4 byte lalu jadikan integer
             unsigned char frameID[4];
             frameID[0] = getByte();
@@ -116,30 +135,30 @@ void* frameIdentifier() {
             frameID[3] = getByte();
             int i;
             for (i = 0; i < 4; i++) {
-                /*debug*/ printf("[FRAME IDENTIFIER] ID %d %x\n", i, frameID[i]);
+                /*debug*/printf("[FRAMEIDENTIFIER] ID %d %x\n", i, frameID[i]);
             }
             insertArray(&tempFrame, frameID[0]);
             insertArray(&tempFrame, frameID[1]);
             insertArray(&tempFrame, frameID[2]);
             insertArray(&tempFrame, frameID[3]);
             int t_num = *((int*) frameID);
-            /*debug*/ printf("[FRAME IDENTIFIER] ID %d\n", t_num);
+            /*debug*/printf("[FRAMEIDENTIFIER] ID %d\n", t_num);
             if (getByte() == STX ) {
                 insertArray(&tempFrame, STX);
-                /*debug*/ printf("[FRAME IDENTIFIER] STX\n");
+                /*debug*/printf("[FRAMEIDENTIFIER] STX\n");
                 //ambil data
-                int counter = 0;
+                int countLength = 0;
                 unsigned char realText;
                 do {
                     realText = getByte();
                     if (realText == ETX) {
                         insertArray(&tempFrame, ETX);
-                        /*debug*/ printf("[FRAME IDENTIFIER] ETX\n");
+                        /*debug*/printf("[FRAMEIDENTIFIER] ETX\n");
                         if (getByte() == countChecksum(tempFrame.data, tempFrame.used)) {
                             thisFrame.id = t_num;
-                            thisFrame.length = counter;
+                            thisFrame.length = countLength;
                             int i;
-                            printf("[FRAME IDENTIFIER] data received: ");
+                            /*debug*/printf("[FRAMEIDENTIFIER] frame received: ");
                             for (i = 0; i < tempText.used; i++) {
                                 printf("%c", tempText.data[i]);
                                 thisFrame.text[i] = tempText.data[i];
@@ -153,8 +172,8 @@ void* frameIdentifier() {
                     //bukan ETX
                     insertArray(&tempFrame, realText);
                     insertArray(&tempText, realText);
-                    printf("[FRAMEIDENTIFIER] Isi data frame no %d : %c \n", ++counter, realText);
-                } while(counter < FRAMEDATASIZE);
+                    /*debug*/printf("[FRAMEIDENTIFIER] DATA %x\n", realText);
+                } while(countLength < FRAMEDATASIZE);
             }
         }
         freeArray(&tempText);
@@ -162,57 +181,18 @@ void* frameIdentifier() {
     }
 }
 
-void *q_get() {
-    int countByte = 0; //counter karakter
-    int lenSleep = 100000; //jeda saat mengkonsumsi data, 100 ms
-    //usleep(lenSleep);
-    //sleep(2);
-    //loop selama antrian masih ada
-    for(;;){
-        while (isEmpty() == 0) {
-            //usleep(lenSleep);
-            unsigned char getfromstack = delete();
-            
-           
-
-            //printf("Mengkonsumsi byte ke-%d: '%x'\n", ++countByte, getfromstack);
-            insertArray(&receivedBytes, getfromstack);
-
-            printf("RECEIVED BYTES! :  %x \n", getfromstack);
-            /*
-            int k = 0;
-            for ( k = 0 ; k < receivedBytes.used ; k++) {
-                printf("%x " , receivedBytes.data[k]);
-            }
-            printf("\n");
-            */
-    
-            if (isLower() && isON == 0) { //transmitter bisa lanjutin
-                printf("Buffer < lowerlimit\n");
-                printf("Mengirim XON.\n");
-                sendByte(XON);
-                isON = 1;
-            }
-            //sleep(1);
-        }
-    }
-}
-
+/* ===== MAIN PROGRAM ===== */
 int main(int argc, char* argv[]) {
     if (argc == 2) {
+        //inisialisasi
+        initArray(&receivedBytes, 5);
+        initArrayFrame(&receivedFrames,5);
+        processedIncomingBytes = 0;
         sock = socket(AF_INET, SOCK_DGRAM, 0);
         if (sock == -1) {
             printf("socket() failed.\n");
             exit(1);
         }
-
-        initArray(&receivedBytes, 5);
-        initArrayFrame(&receivedFrames,5);
-
-        processedIncomingBytes = 0;
-
-        //sendACK(8);        
-
         //susun alamat internet kita
         memset((char*)& myaddr, 0, myaddrlen); //clear memory jadi nol
         myaddr.sin_family = AF_INET; //setting IPv4
@@ -228,40 +208,27 @@ int main(int argc, char* argv[]) {
             exit(1);
         }
         //receiving
-        pthread_t pth;
-        pthread_t pth2;
+        pthread_t tByteHandler;
+        pthread_t tFrameHandler;
         int countByte = 0; //counter karakter
-        char buff; //tempat menampung karakter yang diterima
-
-
+        char rcvchar; //tempat menampung karakter yang diterima
         //loop sampai break di ENDFILE
         while (1) {
             //menerima 1 karakter
-            if (recvfrom(sock, &buff, 1, 0, (struct sockaddr*)& trnsmtaddr, &myaddrlen) > 0) {
-                 add(buff);
-
-                if (buff == STARTFILE) {
-                    pthread_create(&pth, NULL, q_get, "q_get"); //jalankan thread 
-                    pthread_create(&pth2, NULL, frameIdentifier, "fid"); //jalankan thread anak
+            if (recvfrom(sock, &rcvchar, 1, 0, (struct sockaddr*)& trnsmtaddr, &myaddrlen) > 0) {
+                addToBuffer(rcvchar);
+                if (rcvchar == STARTFILE) {
+                    pthread_create(&tByteHandler, NULL, byteHandler, "byteHandler"); //jalankan thread 
+                    pthread_create(&tFrameHandler, NULL, frameHandler, "frameHandler"); //jalankan thread
                     printf("Thread started!\n");
-
-                } else if (buff == ENDFILE) {
-                    printf("END BRO!");
-                    //pthread_join(pth, NULL); //tunggu thread anak selesai
-                    printf("Done?!\n");
-
-                    /*
-                    int k = 0;
-                    for ( k = 0 ; k < receivedBytes.used ; k++) {
-                        printf("%x " , receivedBytes.data[k]);
-                    }
-                    */
-
+                } else if (rcvchar == ENDFILE) {
+                    pthread_join(tByteHandler, NULL);
+                    pthread_join(tFrameHandler, NULL);
+                    printf("Thread finished!\n");
                     break;
                 } else {
-                    //printf("Menerima byte ke-%d : %x.\n", ++countByte , buff);
-                   
-                    if (isUpper()) { //transmit menunda pengiriman
+                    //printf("Menerima byte ke-%d : %x.\n", ++countByte , rcvchar);
+                    if (isBufferUpLimit()) { //transmit menunda pengiriman
                         printf("Buffer > minimum upperlimit\n");
                         printf("Mengirim XOFF.\n");
                         sendByte(XOFF);

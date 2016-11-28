@@ -1,14 +1,14 @@
 #include "connect.h"
 
-/* ADT ARRAY */
+/* ===== ADT ARRAY ===== */
 typedef struct {
-    int* data;
+    unsigned char* data;
     size_t used;
     size_t size;
 } Array;
 
 void initArray(Array* a, size_t initialSize) {
-    a -> data = (int*) malloc(initialSize * sizeof(int));
+    a -> data = (unsigned char*) malloc(initialSize * sizeof(unsigned char));
     a -> used = 0;
     a -> size = initialSize;
 }
@@ -16,7 +16,7 @@ void initArray(Array* a, size_t initialSize) {
 void insertArray(Array* a, int element) {
     if (a -> used == a -> size) {
         a -> size *= 2;
-        a -> data = (int*) realloc(a -> data, a -> size * sizeof(int));
+        a -> data = (unsigned char*) realloc(a -> data, a -> size * sizeof(unsigned char));
     }
     a -> data[a -> used++] = element;
 }
@@ -27,7 +27,7 @@ void freeArray(Array* a) {
     a -> used = a -> size = 0;
 }
 
-/* ADT ARRAY FRAME */
+/* ===== ADT ARRAY FRAME ===== */
 typedef struct {
     int id;
     int length;
