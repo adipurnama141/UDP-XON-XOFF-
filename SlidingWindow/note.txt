@@ -2,23 +2,23 @@ note
 
 checksum : lengthnya wajar mulai dari 1
 
-//
-SNIPPET BACA FRAME
- printf("\n\n");
-    printf("separator!\n");
-    int j;
-    int k;
-    int csummark = 0;
+//SNIPPET BACA FRAME
+printf("\n\n");
+printf("separator!\n");
 
-    for(j = 0 ; j < numframe ; j++){
-        for(k = 0 ; k < FRAMESIZE ; k++){
-            printf("%x ",framess[j][k]);
-            csummark++;
-            if ( framess[j][k] == ETX) {
-                printf("\nChecksum : %x \n" , checksum(framess[j] , csummark));
-            }
+int j;
+int k;
+int csummark = 0;
+
+for(j = 0 ; j < numframe ; j++){
+    for(k = 0 ; k < FRAMESIZE ; k++){
+        printf("%x ",framess[j][k]);
+        csummark++;
+        if ( framess[j][k] == ETX) {
+            printf("\nChecksum : %x \n" , checksum(framess[j] , csummark));
         }
-        csummark = 0;
-        printf("\n");
     }
+    csummark = 0;
+    printf("\n");
+}
     
