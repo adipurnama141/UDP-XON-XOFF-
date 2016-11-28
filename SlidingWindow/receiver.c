@@ -1,124 +1,27 @@
-#include "connect.h"
+#include "array.c"
 #include <net/if.h>
 #include <sys/ioctl.h>
-
 
 #define BUFFSIZE 256
 #define UPLIMIT 254
 #define LOWLIMIT 2
 
-
-int sensitiveReading;
-
-
-
-unsigned char checksum (unsigned char *ptr, size_t sz) {
-    unsigned char chk = 0;
-    while (sz-- != 0) {
-        chk -= *ptr++;
-    }
-    return chk;
-}
-
-typedef struct {
-  unsigned char *array;
-  size_t used;
-  size_t size;
-} Array;
-
-
-
-typedef struct 
-{
-    int id;
-    unsigned char text[FRAMEDATASIZE];
-    int length;
-} FrameData;
-
-typedef struct {
-  FrameData *array;
-  size_t used;
-  size_t size;
-} ArrayFrame;
-
-
-
-Array receivedBytes;
-ArrayFrame receivedFrames;
-
-
-
-//ADT ARRAY
-
-void initArray(Array *a, size_t initialSize) {
-  a->array = (unsigned char *)malloc(initialSize * sizeof(unsigned char));
-  a->used = 0;
-  a->size = initialSize;
-}
-
-void insertArray(Array *a, unsigned char element) {
-  if (a->used == a->size) {
-    a->size *= 2;
-    a->array = (unsigned char *)realloc(a->array, a->size * sizeof(unsigned char));
-  }
-  a->array[a->used++] = element;
-}
-
-void freeArray(Array *a) {
-  free(a->array);
-  a->array = 0;
-  a->used = a->size = 0;
-}
-
-
-void initArrayFrame(ArrayFrame *a, size_t initialSize) {
-  a->array = (FrameData *)malloc(initialSize * sizeof(FrameData));
-  a->used = 0;
-  a->size = initialSize;
-}
-
-void insertArrayFrame(ArrayFrame *a, FrameData element) {
-  if (a->used == a->size) {
-    a->size *= 2;
-    a->array = (FrameData *)realloc(a->array, a->size * sizeof(FrameData));
-  }
-  a->array[a->used++] = element;
-}
-
-void freeArrayFrame(ArrayFrame *a) {
-  free(a->array);
-  a->array = 0;
-  a->used = a->size = 0;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-int isON = 1; //status receiver ON
-int sock; //socket
-int headQueue = 0; //antrian pertama siap dikonsum
-int tailQueue = 0; //space kosong setelah antrian terakhir
-char queue[BUFFSIZE]; //antrian karakter sirkular
-
 struct ifreq ifr; //gatau, dapet dari internet
 struct sockaddr_in myaddr; //address program ini sebaga receiver
 struct sockaddr_in trnsmtaddr; //address transmitter
+
+Array receivedBytes;
+ArrayFrame receivedFrames;
+char queue[BUFFSIZE]; //antrian karakter sirkular
+int headQueue = 0; //antrian pertama siap dikonsum
+int isON = 1; //status receiver ON
+int processedIncomingBytes;
+int sensitiveReading;
+int sock; //socket
+int tailQueue = 0; //space kosong setelah antrian terakhir
 socklen_t myaddrlen = sizeof(myaddr); //ukuran socket ini
 
-
-
+/* ADT QUEUE */
 int isEmpty() {
     return headQueue == tailQueue ? 1 : 0;
 }
@@ -150,29 +53,26 @@ char delete() {
     return hasil;
 }
 
-
-
-
-//Pengaksesan Array
-int processedIncomingBytes;
-
-
-unsigned char getByte() {
-    unsigned char temp;
-    //penahan
-    while(processedIncomingBytes >= receivedBytes.used) {
+/* PENGAKSESAN ARRAY */
+unsigned char countChecksum(unsigned char* ptr, size_t sz) {
+    unsigned char chk = 0;
+    while (sz-- != 0) {
+        chk -= *ptr++;
     }
-    temp = receivedBytes.array[processedIncomingBytes];
-    //printf("Get Byte Called : Number %d returning %x\n", processedIncomingBytes , temp);
-    processedIncomingBytes++;
-    return temp;
+    /*debug*/ printf("[COUNT CHECKSUM] %x\n", chk);
+    return chk;
 }
 
+unsigned char getByte() {
+    while(processedIncomingBytes >= receivedBytes.used) {
+        //wait until new incoming byte
+    }
+    unsigned char result = receivedBytes.data[processedIncomingBytes++];
+    /*debug*/ printf("[GET BYTE] %x\n", result);
+    return result;
+}
 
-
-
-
-void sendX(char buffX) {
+void sendByte(char buffX) {
     //kirim 1 karakter
     if (sendto(sock, &buffX, 1, 0, (struct sockaddr*)& trnsmtaddr, myaddrlen) < 0) {
         printf("sendto() failed.\n");
@@ -180,145 +80,87 @@ void sendX(char buffX) {
     }
 }
 
-
-
-
-void sendACK(int fnum){
-    //printf("SENDING ACK :')) \n");
+void sendACK(int fnum) {
+    //build ACK packet
     unsigned char ackpacket[6];
-
     ackpacket[0] = ACK;
     ackpacket[4] = (fnum >> 24) & 0xFF;
     ackpacket[3] = (fnum >> 16) & 0xFF;
     ackpacket[2] = (fnum >> 8) & 0xFF;
     ackpacket[1] = fnum & 0xFF;
-    ackpacket[5] = checksum(ackpacket , 5);
-
-    
+    ackpacket[5] = countChecksum(ackpacket , 5);
+    //send
     int i = 0;
-    /*
-    for (i =0 ; i <6 ;i++){
-        printf("%x ", ackpacket[i]);
+    while (i < 6) {
+    	/*debug*/ printf("[SEND ACK] %d %x\n", i, ackpacket[i]);
+        sendByte(ackpacket[i++]);
     }
-    printf("/n");
-    */
-
-    i = 0;
-    unsigned char buf;
-    while (i < 6){
-        buf = ackpacket[i];
-        sendX(buf);
-        i++;
-
-    }
-
 }
 
-
-
-
-void *frameIdentifier(){
+void* frameIdentifier() {
+	FrameData thisFrame;
     Array tempFrame;
     Array tempText;
     initArray(&tempFrame, 5);
     initArray(&tempText, 5);
-
-    unsigned char currentByteCheck;
-    //printf("[FRAMEIDENTIFIER]  SAYA AKTIFF!!\n");
-    for(;;){
-
+    //loop sampai paket habis
+    while (1) {
         if (getByte() == SOH) {
             insertArray(&tempFrame, SOH);
-            printf("[FRAMEIDENTIFIER]   SOH detected!\n");
-
+            /*debug*/ printf("[FRAME IDENTIFIER] SOH\n");
+            //ambil 4 byte lalu jadikan integer
             unsigned char frameID[4];
             frameID[0] = getByte();
             frameID[1] = getByte();
             frameID[2] = getByte();
             frameID[3] = getByte();
-
+            int i;
+            for (i = 0; i < 4; i++) {
+                /*debug*/ printf("[FRAME IDENTIFIER] ID %d %x\n", i, frameID[i]);
+            }
             insertArray(&tempFrame, frameID[0]);
             insertArray(&tempFrame, frameID[1]);
             insertArray(&tempFrame, frameID[2]);
             insertArray(&tempFrame, frameID[3]);
-
             int t_num = *((int*) frameID);
-            printf("[FRAMEIDENTIFIER]  lengkap! %x %x %x %x \n", frameID[0], frameID[1], frameID[2], frameID[3]);
-            printf("[FRAMEIDENTIFIER]  NOMOR SAYA : %d \n" , t_num);
-
+            /*debug*/ printf("[FRAME IDENTIFIER] ID %d\n", t_num);
             if (getByte() == STX ) {
-                printf("[FRAMEIDENTIFIER]   STX detected!\n");
                 insertArray(&tempFrame, STX);
-                unsigned char realText = getByte();
-                int counter  = 0;
-                while ((realText != ETX) && (counter < FRAMEDATASIZE)) {
-                    printf("[FRAMEIDENTIFIER]  Isi data frame no %d :  %c \n" , counter + 1 , realText);
+                /*debug*/ printf("[FRAME IDENTIFIER] STX\n");
+                //ambil data
+                int counter = 0;
+                unsigned char realText;
+                do {
+                    realText = getByte();
+                    if (realText == ETX) {
+                        insertArray(&tempFrame, ETX);
+                        /*debug*/ printf("[FRAME IDENTIFIER] ETX\n");
+                        if (getByte() == countChecksum(tempFrame.data, tempFrame.used)) {
+                            thisFrame.id = t_num;
+                            thisFrame.length = counter;
+                            int i;
+                            printf("[FRAME IDENTIFIER] data received: ");
+                            for (i = 0; i < tempText.used; i++) {
+                                printf("%c", tempText.data[i]);
+                                thisFrame.text[i] = tempText.data[i];
+                            }
+                            printf("\n");
+                            insertArrayFrame(&receivedFrames, thisFrame);
+                            sendACK(t_num);
+                        }
+                        break;
+                    }
+                    //bukan ETX
                     insertArray(&tempFrame, realText);
                     insertArray(&tempText, realText);
-                    counter++;
-                    realText = getByte();
-                }
-
-                if(realText ==  ETX){
-                    //printf("[FRAMEIDENTIFIER]   ETX detected!\n");
-                    insertArray(&tempFrame, ETX);
-
-                    unsigned char csum = getByte();
-                    unsigned char computed_csum = checksum(tempFrame.array , tempFrame.used);
-
-                    if (csum == computed_csum){
-                        FrameData thisFrame;
-                        printf("Frame %d diterimaa. \n", t_num);
-                        printf("Counter : %d \n", counter);
-                        thisFrame.id = t_num;
-                        thisFrame.length = counter;
-
-                        int i = 0;
-                        for ( i = 0 ; i < tempText.used ; i++) {
-                            printf("%c", tempText.array[i]);
-                            thisFrame.text[i] = tempText.array[i];
-                        }
-                        printf("\n");
-
-                        insertArrayFrame(&receivedFrames,thisFrame);
-                        printf("Trying to send ACK%d\n",t_num);
-
-                        sendACK(t_num);
-
-                        /*
-                        int o = 0;
-                        for (o = 0 ; o < receivedFrames.used ; o++){
-                            printf("Frame no : %d \n", receivedFrames.array[o].id);
-
-                        }
-                        */
-
-                    }
-                   
-
-                }
-
-
+                    printf("[FRAMEIDENTIFIER] Isi data frame no %d : %c \n", ++counter, realText);
+                } while(counter < FRAMEDATASIZE);
             }
-
-
         }
         freeArray(&tempText);
         freeArray(&tempFrame);
-
     }
-
-
-
-    
-
-
-
-
 }
-
-
-
 
 void *q_get() {
     int countByte = 0; //counter karakter
@@ -340,7 +182,7 @@ void *q_get() {
             /*
             int k = 0;
             for ( k = 0 ; k < receivedBytes.used ; k++) {
-                printf("%x " , receivedBytes.array[k]);
+                printf("%x " , receivedBytes.data[k]);
             }
             printf("\n");
             */
@@ -348,7 +190,7 @@ void *q_get() {
             if (isLower() && isON == 0) { //transmitter bisa lanjutin
                 printf("Buffer < lowerlimit\n");
                 printf("Mengirim XON.\n");
-                sendX(XON);
+                sendByte(XON);
                 isON = 1;
             }
             //sleep(1);
@@ -411,7 +253,7 @@ int main(int argc, char* argv[]) {
                     /*
                     int k = 0;
                     for ( k = 0 ; k < receivedBytes.used ; k++) {
-                        printf("%x " , receivedBytes.array[k]);
+                        printf("%x " , receivedBytes.data[k]);
                     }
                     */
 
@@ -422,7 +264,7 @@ int main(int argc, char* argv[]) {
                     if (isUpper()) { //transmit menunda pengiriman
                         printf("Buffer > minimum upperlimit\n");
                         printf("Mengirim XOFF.\n");
-                        sendX(XOFF);
+                        sendByte(XOFF);
                         isON = 0;
                     }
                 }
