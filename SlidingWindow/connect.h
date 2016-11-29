@@ -22,4 +22,3 @@
 #define WINDOWSIZE 2
 
 #endif
-

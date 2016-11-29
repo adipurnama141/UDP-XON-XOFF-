@@ -46,12 +46,13 @@ void initArrayFrame(ArrayFrame* a, size_t initialSize) {
     a -> size = initialSize;
 }
 
-void insertArrayFrame(ArrayFrame *a, FrameData element) {
+void insertArrayFrame(ArrayFrame* a, FrameData element) {
     if (a -> used == a -> size) {
         a -> size *= 2;
         a -> data = (FrameData*) realloc(a -> data, a -> size * sizeof(FrameData));
     }
-    a -> data[a -> used++] = element;
+    a -> used++;
+    a -> data[element.id] = element;
 }
 
 void freeArrayFrame(ArrayFrame* a) {
