@@ -7,7 +7,8 @@ typedef struct {
     size_t size;
 } Array;
 
-void initArray(Array* a, size_t initialSize) {
+void initArray(Array* a) {
+    int initialSize = 1;
     a -> data = (unsigned char*) malloc(initialSize * sizeof(unsigned char));
     a -> used = 0;
     a -> size = initialSize;
@@ -19,12 +20,6 @@ void insertArray(Array* a, int element) {
         a -> data = (unsigned char*) realloc(a -> data, a -> size * sizeof(unsigned char));
     }
     a -> data[a -> used++] = element;
-}
-
-void freeArray(Array* a) {
-    //free(a -> data);
-    a -> data = 0;
-    a -> used = a -> size = 0;
 }
 
 /* ===== ADT ARRAY FRAME ===== */
@@ -40,7 +35,8 @@ typedef struct {
     size_t size;
 } ArrayFrame;
 
-void initArrayFrame(ArrayFrame* a, size_t initialSize) {
+void initArrayFrame(ArrayFrame* a) {
+    int initialSize = 1;
     a -> data = (FrameData*) malloc(initialSize * sizeof(FrameData));
     a -> used = 0;
     a -> size = initialSize;
@@ -53,10 +49,4 @@ void insertArrayFrame(ArrayFrame* a, FrameData element) {
     }
     a -> used++;
     a -> data[element.id] = element;
-}
-
-void freeArrayFrame(ArrayFrame* a) {
-    //free(a -> data);
-    a -> data = 0;
-    a -> used = a -> size = 0;
 }

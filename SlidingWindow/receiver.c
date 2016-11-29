@@ -18,37 +18,37 @@ char queue[BUFFSIZE]; //antrian karakter sirkular
 int headQueue = 0; //antrian pertama siap dikonsum
 int tailQueue = 0; //space kosong setelah antrian terakhir
 /*array*/
-Array receivedBytes;
-ArrayFrame receivedFrames;
-int isFrameComplete = 0;
-int processedIncomingBytes;
+Array receivedBytes; //seluruh byte yg diterima disimpan di 1 string panjang
+ArrayFrame receivedFrames; //frame-frame yg benar dan terurut
+int isFrameComplete = 0; //apakah frame sedang di proses
+int bytesProcessed = 0; //sudah berapa byte yang di proses
+pthread_mutex_t lock; //pengiriman ACK/NAK di lock agar data terurut
 
 unsigned char countChecksum(unsigned char* ptr, size_t sz) {
     unsigned char chk = 0;
     while (sz-- != 0) {
-        chk -= *ptr++;
+        chk -= *ptr++; //dari internet, ikutin aja
     }
-    ///*debug*/printf("[COUNTCHECKSUM] %x\n", chk);
     return chk;
 }
 
 unsigned char getByte() {
-    while(processedIncomingBytes >= receivedBytes.used); //wait until new incoming byte
-    unsigned char result = receivedBytes.data[processedIncomingBytes++];
-    ///*debug*/printf("[GETBYTE] %x\n", result);
+    while(bytesProcessed >= receivedBytes.used); //wait until new incoming byte
+    unsigned char result = receivedBytes.data[bytesProcessed++];
     return result;
 }
 
 void sendByte(char buffX) {
-    ///*debug*/printf("[SENDBYTE] %x\n", buffX);
+    usleep(10000); //jeda supaya gak balapan
     if (sendto(sock, &buffX, 1, 0, (struct sockaddr*)& trnsmtaddr, myaddrlen) < 0) {
         printf("sendto() failed.\n");
         exit(1);
     }
 }
 
-void sendACK(int fnum, unsigned char nack) {
-    //build ACK packet
+void sendNACK(int fnum, unsigned char nack) {
+    pthread_mutex_lock(&lock);
+    //build packet
     unsigned char ackpacket[6];
     ackpacket[0] = nack; //nack bernilai ACK atau NAK
     ackpacket[4] = (fnum >> 24) & 0xFF;
@@ -60,12 +60,13 @@ void sendACK(int fnum, unsigned char nack) {
     if (nack == ACK) {
         printf("Mengirim ACK frame ID = %d.\n", fnum);
     } else if (nack == NAK) {
-        printf("Mengirim NAK frame ID = %d.\n", fnum);
+        printf("mengirim NAK frame ID = %d.\n", fnum);
     }
     int i = 0;
     while (i < 6) {
         sendByte(ackpacket[i++]);
     }
+    pthread_mutex_unlock(&lock);
 }
 
 /* ===== ADT QUEUE ===== */
@@ -90,7 +91,6 @@ int isBufferUpLimit() {
 }
 
 void addToBuffer(char c) {
-    ///*debug*/printf("[ADDTOBUFFER] %x\n", c);
     queue[tailQueue++] = c;
     tailQueue %= BUFFSIZE;
 }
@@ -98,20 +98,16 @@ void addToBuffer(char c) {
 char delFromBuffer() {
     char result = queue[headQueue++];
     headQueue %= BUFFSIZE;
-    ///*debug*/printf("[DELFROMBUFFER] %x\n", result);
     return result;
 }
 
 /* ===== THREAD ===== */
 void* byteHandler() {
-    int lenSleep = 100000; //jeda saat mengkonsumsi data, nanosecond
-    //loop selama antrian masih ada
     while (1) {
+        //loop selama antrian masih ada
         while (isBufferEmpty() == 0) {
-            unsigned char rcvchar = delFromBuffer();
-            insertArray(&receivedBytes, rcvchar);
-            ///*debug*/printf("[BYTEHANDLER] %x\n", rcvchar);
-            if (isBufferLowLimit() && isON == 0) { //transmitter bisa lanjutin
+            insertArray(&receivedBytes, delFromBuffer()); //konsumsi: masukkan ke array
+            if (isBufferLowLimit() && (isON == 0)) { //transmitter bisa lanjutin
                 printf("Buffer < lowerlimit\n");
                 printf("Mengirim XON.\n");
                 sendByte(XON);
@@ -122,60 +118,59 @@ void* byteHandler() {
 }
 
 void* frameHandler() {
-    FrameData thisFrame;
     Array tempFrame;
-    Array tempText;
-    initArray(&tempFrame, 5);
-    initArray(&tempText, 5);
-    //loop sampai paket habis
+    FrameData thisFrame;
+    int dataLength;
+    int frameID;
+    int i;
+    unsigned char byteID[4];
+    unsigned char cs;
+    //jika paket frame sudah habis, di-interrupt sama main program
     while (1) {
         if (getByte() == SOH) {
-            isFrameComplete = 0;
+            isFrameComplete = 0; //proses identifikasi 1 frame dimulai, tidak boleh diganggu
+            initArray(&tempFrame);
             insertArray(&tempFrame, SOH);
-            printf("\nSOH.\n");
             //ambil 4 byte lalu jadikan integer
-            unsigned char frameID[4];
-            int i;
             for (i = 0; i < 4; i++) {
-                frameID[i] = getByte();
-                insertArray(&tempFrame, frameID[i]);
-                ///*debug*/printf("[FRAMEHANDLER] ID %d %x\n", i, frameID[i]);
+                byteID[i] = getByte();
+                insertArray(&tempFrame, byteID[i]);
             }
-            int t_num = *((int*) frameID);
-            /*debug*/printf("Frame ID = %d.\n", t_num);
+            frameID = *((int*) byteID);
+            printf("\nFrame ID = %d diterima.\n", frameID);
             if (getByte() == STX ) {
                 insertArray(&tempFrame, STX);
-                /*debug*/printf("STX.\n");
                 //ambil data
-                unsigned char realText;
+                unsigned char rcvchar;
+                dataLength = 0;
                 do {
-                    realText = getByte();
-                    if (realText == ETX) {
+                    rcvchar = getByte();
+                    if (rcvchar == ETX) {
                         insertArray(&tempFrame, ETX);
-                        /*debug*/printf("ETX.\n");
-                        if (getByte() == countChecksum(tempFrame.data, tempFrame.used)) {
-                            thisFrame.id = t_num;
-                            thisFrame.length = tempText.used;
-                            int i;
-                            for (i = 0; i < tempText.used; i++) {
-                                thisFrame.text[i] = tempText.data[i];
+                        cs = getByte();
+                        if (cs == countChecksum(tempFrame.data, tempFrame.used)) {
+                            //frame sudah benar, gabungkan ke frame pusat untuk diurutkan
+                            thisFrame.id = frameID;
+                            thisFrame.length = dataLength;
+                            for (i = 0; i < dataLength; i++) {
+                                thisFrame.text[i] = tempFrame.data[i + 6]; //data pertama ada di indeks 6
                             }
                             insertArrayFrame(&receivedFrames, thisFrame);
-                            sendACK(t_num, ACK);
+                            sendNACK(frameID, ACK);
                         } else { //checksum berbeda
-                            sendACK(t_num, NAK);
+                            printf("Invalid checksum, ");
+                            sendNACK(frameID, NAK);
                         }
                         break;
                     } else {
-                        insertArray(&tempFrame, realText);
-                        insertArray(&tempText, realText);
+                        dataLength++;
+                        insertArray(&tempFrame, rcvchar);
                     }
-                } while(1);
+                } while(1); //data bisa sebanyak apapun, berhenti hanya jika sudah menerima ETX
             } else { //setelah ID bukan STX
-                sendACK(t_num, NAK);
+                printf("Invalid STX, ");
+                sendNACK(frameID, NAK);
             }
-            freeArray(&tempText);
-            freeArray(&tempFrame);
             isFrameComplete = 1;
         }
     }
@@ -185,10 +180,13 @@ void* frameHandler() {
 int main(int argc, char* argv[]) {
     int mulai = 0;
     if (argc == 2) {
+        if (pthread_mutex_init(&lock, NULL) != 0) {
+            printf("mutex_init() failed.\n");
+            exit(1);
+        }
         //inisialisasi
-        initArray(&receivedBytes, 5);
-        initArrayFrame(&receivedFrames,5);
-        processedIncomingBytes = 0;
+        initArray(&receivedBytes);
+        initArrayFrame(&receivedFrames);
         sock = socket(AF_INET, SOCK_DGRAM, 0);
         if (sock == -1) {
             printf("socket() failed.\n");
@@ -222,7 +220,7 @@ int main(int argc, char* argv[]) {
                     mulai = 1;
                     pthread_create(&tByteHandler, NULL, byteHandler, "byteHandler"); //jalankan thread 
                     pthread_create(&tFrameHandler, NULL, frameHandler, "frameHandler"); //jalankan thread
-                } else if (rcvchar == ENDFILE && isFrameComplete) {
+                } else if ((rcvchar == ENDFILE) && isFrameComplete) {
                     pthread_cancel(tByteHandler);
                     pthread_cancel(tFrameHandler);
                     //print data
@@ -237,7 +235,6 @@ int main(int argc, char* argv[]) {
                     printf("\n");
                     break;
                 } else {
-                    //printf("Menerima byte ke-%d : %x.\n", ++countByte , rcvchar);
                     if (isBufferUpLimit()) { //transmit menunda pengiriman
                         printf("Buffer > minimum upperlimit\n");
                         printf("Mengirim XOFF.\n");
