@@ -18,6 +18,9 @@ void insertArray(Array* a, int element) {
     if (a -> used == a -> size) {
         a -> size *= 2;
         a -> data = (unsigned char*) realloc(a -> data, a -> size * sizeof(unsigned char));
+        if ((a -> data) == NULL) {
+            printf("realloc failed!\n");
+        }
     }
     a -> data[a -> used++] = element;
 }

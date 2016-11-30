@@ -37,6 +37,13 @@ void sendByte(char buffX) {
     }
 }
 
+void sendEndConnection(){
+    sendByte(ENDFILE);
+    sendByte(ENDFILE);
+    sendByte(ENDFILE);
+    sendByte(ENDFILE);
+}
+
 void sendFrame(int fnum) {
     pthread_mutex_lock(&lock);
     printf("Mengirim frame ID = %d.\n", fnum);
@@ -252,7 +259,8 @@ int main(int argc, char* argv[]) {
         pthread_join(tSlidingWindow, NULL);
         pthread_cancel(tNACKHandler);
         pthread_cancel(tByteHandler);
-        sendByte(ENDFILE);
+        sendEndConnection();
+        //sendByte(ENDFILE);
     } else { //arg invalid
         printf("Usage : ./transmitter ip_address port filename\n");
         exit(1);

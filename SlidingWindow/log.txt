@@ -1,0 +1,1075 @@
+Binding pada 192.168.43.14:8081 ...
+
+Frame ID = 0 diterima.
+Mengirim ACK frame ID = 0.
+
+Frame ID = 1 diterima.
+Mengirim ACK frame ID = 1.
+
+Frame ID = 2 diterima.
+Mengirim ACK frame ID = 2.
+
+Frame ID = 3 diterima.
+Mengirim ACK frame ID = 3.
+
+Frame ID = 4 diterima.
+Mengirim ACK frame ID = 4.
+
+Frame ID = 5 diterima.
+Mengirim ACK frame ID = 5.
+
+Frame ID = 6 diterima.
+Mengirim ACK frame ID = 6.
+
+Frame ID = 7 diterima.
+Mengirim ACK frame ID = 7.
+
+Frame ID = 8 diterima.
+Mengirim ACK frame ID = 8.
+
+Frame ID = 9 diterima.
+Mengirim ACK frame ID = 9.
+
+Frame ID = 10 diterima.
+Mengirim ACK frame ID = 10.
+
+Frame ID = 11 diterima.
+Mengirim ACK frame ID = 11.
+
+Frame ID = 12 diterima.
+Mengirim ACK frame ID = 12.
+
+Frame ID = 13 diterima.
+Mengirim ACK frame ID = 13.
+
+Frame ID = 14 diterima.
+Mengirim ACK frame ID = 14.
+
+Frame ID = 15 diterima.
+Mengirim ACK frame ID = 15.
+
+Frame ID = 16 diterima.
+Mengirim ACK frame ID = 16.
+
+Frame ID = 17 diterima.
+Mengirim ACK frame ID = 17.
+
+Frame ID = 18 diterima.
+Mengirim ACK frame ID = 18.
+
+Frame ID = 19 diterima.
+Mengirim ACK frame ID = 19.
+
+Frame ID = 20 diterima.
+Mengirim ACK frame ID = 20.
+
+Frame ID = 21 diterima.
+Mengirim ACK frame ID = 21.
+
+Frame ID = 22 diterima.
+Mengirim ACK frame ID = 22.
+
+Frame ID = 23 diterima.
+Mengirim ACK frame ID = 23.
+
+Frame ID = 24 diterima.
+Mengirim ACK frame ID = 24.
+
+Frame ID = 25 diterima.
+Mengirim ACK frame ID = 25.
+
+Frame ID = 26 diterima.
+Mengirim ACK frame ID = 26.
+
+Frame ID = 27 diterima.
+Mengirim ACK frame ID = 27.
+
+Frame ID = 28 diterima.
+Mengirim ACK frame ID = 28.
+
+Frame ID = 29 diterima.
+Mengirim ACK frame ID = 29.
+
+Frame ID = 30 diterima.
+Mengirim ACK frame ID = 30.
+
+Frame ID = 31 diterima.
+Mengirim ACK frame ID = 31.
+
+Frame ID = 32 diterima.
+Mengirim ACK frame ID = 32.
+
+Frame ID = 33 diterima.
+Mengirim ACK frame ID = 33.
+
+Frame ID = 34 diterima.
+Mengirim ACK frame ID = 34.
+
+Frame ID = 35 diterima.
+Mengirim ACK frame ID = 35.
+
+Frame ID = 36 diterima.
+Mengirim ACK frame ID = 36.
+
+Frame ID = 37 diterima.
+Mengirim ACK frame ID = 37.
+
+Frame ID = 38 diterima.
+Mengirim ACK frame ID = 38.
+
+Frame ID = 39 diterima.
+Mengirim ACK frame ID = 39.
+
+Frame ID = 40 diterima.
+Mengirim ACK frame ID = 40.
+
+Frame ID = 41 diterima.
+Mengirim ACK frame ID = 41.
+
+Frame ID = 42 diterima.
+Mengirim ACK frame ID = 42.
+
+Frame ID = 43 diterima.
+Mengirim ACK frame ID = 43.
+
+Frame ID = 44 diterima.
+Mengirim ACK frame ID = 44.
+
+Frame ID = 45 diterima.
+Mengirim ACK frame ID = 45.
+
+Frame ID = 46 diterima.
+Mengirim ACK frame ID = 46.
+
+Frame ID = 47 diterima.
+Mengirim ACK frame ID = 47.
+
+Frame ID = 48 diterima.
+Mengirim ACK frame ID = 48.
+
+Frame ID = 49 diterima.
+Mengirim ACK frame ID = 49.
+
+Frame ID = 50 diterima.
+Mengirim ACK frame ID = 50.
+
+Frame ID = 51 diterima.
+Mengirim ACK frame ID = 51.
+
+Frame ID = 52 diterima.
+Mengirim ACK frame ID = 52.
+
+Frame ID = 53 diterima.
+Mengirim ACK frame ID = 53.
+
+Frame ID = 54 diterima.
+Invalid checksum, mengirim NAK frame ID = 54.
+
+Frame ID = 55 diterima.
+Mengirim ACK frame ID = 55.
+
+Frame ID = 54 diterima.
+Mengirim ACK frame ID = 54.
+
+Frame ID = 56 diterima.
+Mengirim ACK frame ID = 56.
+
+Frame ID = 57 diterima.
+Mengirim ACK frame ID = 57.
+
+Frame ID = 58 diterima.
+Mengirim ACK frame ID = 58.
+
+Frame ID = 59 diterima.
+Mengirim ACK frame ID = 59.
+
+Frame ID = 60 diterima.
+Mengirim ACK frame ID = 60.
+
+Frame ID = 61 diterima.
+Mengirim ACK frame ID = 61.
+
+Frame ID = 62 diterima.
+Mengirim ACK frame ID = 62.
+
+Frame ID = 63 diterima.
+Mengirim ACK frame ID = 63.
+
+Frame ID = 64 diterima.
+Mengirim ACK frame ID = 64.
+
+Frame ID = 65 diterima.
+Mengirim ACK frame ID = 65.
+
+Frame ID = 66 diterima.
+Mengirim ACK frame ID = 66.
+
+Frame ID = 67 diterima.
+Mengirim ACK frame ID = 67.
+
+Frame ID = 68 diterima.
+Invalid STX, mengirim NAK frame ID = 68.
+
+Frame ID = 69 diterima.
+Mengirim ACK frame ID = 69.
+
+Frame ID = 68 diterima.
+Mengirim ACK frame ID = 68.
+
+Frame ID = 70 diterima.
+Invalid checksum, mengirim NAK frame ID = 70.
+
+Frame ID = 71 diterima.
+Mengirim ACK frame ID = 71.
+
+Frame ID = 70 diterima.
+Mengirim ACK frame ID = 70.
+
+Frame ID = 72 diterima.
+Mengirim ACK frame ID = 72.
+
+Frame ID = 73 diterima.
+Mengirim ACK frame ID = 73.
+
+Frame ID = 74 diterima.
+Mengirim ACK frame ID = 74.
+
+Frame ID = 75 diterima.
+Mengirim ACK frame ID = 75.
+
+Frame ID = 76 diterima.
+Mengirim ACK frame ID = 76.
+
+Frame ID = 77 diterima.
+Mengirim ACK frame ID = 77.
+
+Frame ID = 78 diterima.
+Mengirim ACK frame ID = 78.
+
+Frame ID = 79 diterima.
+Invalid checksum, mengirim NAK frame ID = 79.
+
+Frame ID = 79 diterima.
+Invalid checksum, mengirim NAK frame ID = 79.
+
+Frame ID = 80 diterima.
+Mengirim ACK frame ID = 80.
+
+Frame ID = 79 diterima.
+Invalid checksum, mengirim NAK frame ID = 79.
+
+Frame ID = 79 diterima.
+Mengirim ACK frame ID = 79.
+
+Frame ID = 81 diterima.
+Mengirim ACK frame ID = 81.
+
+Frame ID = 82 diterima.
+Mengirim ACK frame ID = 82.
+
+Frame ID = 83 diterima.
+Mengirim ACK frame ID = 83.
+
+Frame ID = 84 diterima.
+Mengirim ACK frame ID = 84.
+
+Frame ID = 85 diterima.
+Mengirim ACK frame ID = 85.
+
+Frame ID = 86 diterima.
+Invalid checksum, mengirim NAK frame ID = 86.
+
+Frame ID = 86 diterima.
+Mengirim ACK frame ID = 86.
+
+Frame ID = 87 diterima.
+Mengirim ACK frame ID = 87.
+
+Frame ID = 88 diterima.
+Mengirim ACK frame ID = 88.
+
+Frame ID = 89 diterima.
+Mengirim ACK frame ID = 89.
+
+Frame ID = 90 diterima.
+Mengirim ACK frame ID = 90.
+
+Frame ID = 91 diterima.
+Mengirim ACK frame ID = 91.
+
+Frame ID = 92 diterima.
+Mengirim ACK frame ID = 92.
+
+Frame ID = 93 diterima.
+Mengirim ACK frame ID = 93.
+
+Frame ID = 94 diterima.
+Mengirim ACK frame ID = 94.
+
+Frame ID = 95 diterima.
+Mengirim ACK frame ID = 95.
+
+Frame ID = 96 diterima.
+Mengirim ACK frame ID = 96.
+
+Frame ID = 97 diterima.
+Mengirim ACK frame ID = 97.
+
+Frame ID = 98 diterima.
+Mengirim ACK frame ID = 98.
+
+Frame ID = 99 diterima.
+Mengirim ACK frame ID = 99.
+
+Frame ID = 100 diterima.
+Mengirim ACK frame ID = 100.
+
+Frame ID = 101 diterima.
+Mengirim ACK frame ID = 101.
+
+Frame ID = 102 diterima.
+Mengirim ACK frame ID = 102.
+
+Frame ID = 103 diterima.
+Mengirim ACK frame ID = 103.
+
+Frame ID = 104 diterima.
+Mengirim ACK frame ID = 104.
+
+Frame ID = 105 diterima.
+Mengirim ACK frame ID = 105.
+
+Frame ID = 106 diterima.
+Mengirim ACK frame ID = 106.
+
+Frame ID = 107 diterima.
+Mengirim ACK frame ID = 107.
+
+Frame ID = 108 diterima.
+Mengirim ACK frame ID = 108.
+
+Frame ID = 109 diterima.
+Mengirim ACK frame ID = 109.
+
+Frame ID = 108 diterima.
+Mengirim ACK frame ID = 108.
+
+Frame ID = 110 diterima.
+Mengirim ACK frame ID = 110.
+
+Frame ID = 111 diterima.
+Mengirim ACK frame ID = 111.
+
+Frame ID = 112 diterima.
+Mengirim ACK frame ID = 112.
+
+Frame ID = 113 diterima.
+Mengirim ACK frame ID = 113.
+
+Frame ID = 114 diterima.
+Mengirim ACK frame ID = 114.
+
+Frame ID = 115 diterima.
+Mengirim ACK frame ID = 115.
+
+Frame ID = 116 diterima.
+Mengirim ACK frame ID = 116.
+
+Frame ID = 117 diterima.
+Mengirim ACK frame ID = 117.
+
+Frame ID = 118 diterima.
+Mengirim ACK frame ID = 118.
+
+Frame ID = 119 diterima.
+Mengirim ACK frame ID = 119.
+
+Frame ID = 120 diterima.
+Mengirim ACK frame ID = 120.
+
+Frame ID = 121 diterima.
+Mengirim ACK frame ID = 121.
+
+Frame ID = 120 diterima.
+Mengirim ACK frame ID = 120.
+
+Frame ID = 122 diterima.
+Mengirim ACK frame ID = 122.
+
+Frame ID = 123 diterima.
+Mengirim ACK frame ID = 123.
+
+Frame ID = 124 diterima.
+Mengirim ACK frame ID = 124.
+
+Frame ID = 125 diterima.
+Mengirim ACK frame ID = 125.
+
+Frame ID = 126 diterima.
+Mengirim ACK frame ID = 126.
+
+Frame ID = 127 diterima.
+Mengirim ACK frame ID = 127.
+
+Frame ID = 128 diterima.
+Mengirim ACK frame ID = 128.
+
+Frame ID = 129 diterima.
+Mengirim ACK frame ID = 129.
+
+Frame ID = 130 diterima.
+Mengirim ACK frame ID = 130.
+
+Frame ID = 131 diterima.
+Mengirim ACK frame ID = 131.
+
+Frame ID = 132 diterima.
+Mengirim ACK frame ID = 132.
+
+Frame ID = 133 diterima.
+Mengirim ACK frame ID = 133.
+
+Frame ID = 134 diterima.
+Mengirim ACK frame ID = 134.
+
+Frame ID = 135 diterima.
+Mengirim ACK frame ID = 135.
+
+Frame ID = 136 diterima.
+Mengirim ACK frame ID = 136.
+
+Frame ID = 137 diterima.
+Mengirim ACK frame ID = 137.
+
+Frame ID = 138 diterima.
+Mengirim ACK frame ID = 138.
+
+Frame ID = 139 diterima.
+Mengirim ACK frame ID = 139.
+
+Frame ID = 140 diterima.
+Mengirim ACK frame ID = 140.
+
+Frame ID = 141 diterima.
+Mengirim ACK frame ID = 141.
+
+Frame ID = 142 diterima.
+Mengirim ACK frame ID = 142.
+
+Frame ID = 143 diterima.
+Mengirim ACK frame ID = 143.
+
+Frame ID = 144 diterima.
+Mengirim ACK frame ID = 144.
+
+Frame ID = 145 diterima.
+Mengirim ACK frame ID = 145.
+
+Frame ID = 146 diterima.
+Mengirim ACK frame ID = 146.
+
+Frame ID = 147 diterima.
+Mengirim ACK frame ID = 147.
+
+Frame ID = 148 diterima.
+Mengirim ACK frame ID = 148.
+
+Frame ID = 149 diterima.
+Mengirim ACK frame ID = 149.
+
+Frame ID = 150 diterima.
+Mengirim ACK frame ID = 150.
+
+Frame ID = 151 diterima.
+Mengirim ACK frame ID = 151.
+
+Frame ID = 152 diterima.
+Mengirim ACK frame ID = 152.
+
+Frame ID = 153 diterima.
+Mengirim ACK frame ID = 153.
+
+Frame ID = 154 diterima.
+Mengirim ACK frame ID = 154.
+
+Frame ID = 155 diterima.
+Mengirim ACK frame ID = 155.
+
+Frame ID = 156 diterima.
+Mengirim ACK frame ID = 156.
+
+Frame ID = 157 diterima.
+Mengirim ACK frame ID = 157.
+
+Frame ID = 158 diterima.
+Mengirim ACK frame ID = 158.
+
+Frame ID = 159 diterima.
+Mengirim ACK frame ID = 159.
+
+Frame ID = 158 diterima.
+Mengirim ACK frame ID = 158.
+
+Frame ID = 160 diterima.
+Mengirim ACK frame ID = 160.
+
+Frame ID = 161 diterima.
+Mengirim ACK frame ID = 161.
+
+Frame ID = 162 diterima.
+Mengirim ACK frame ID = 162.
+
+Frame ID = 163 diterima.
+Mengirim ACK frame ID = 163.
+
+Frame ID = 164 diterima.
+Mengirim ACK frame ID = 164.
+
+Frame ID = 165 diterima.
+Mengirim ACK frame ID = 165.
+
+Frame ID = 166 diterima.
+Mengirim ACK frame ID = 166.
+
+Frame ID = 167 diterima.
+Mengirim ACK frame ID = 167.
+
+Frame ID = 168 diterima.
+Mengirim ACK frame ID = 168.
+
+Frame ID = 169 diterima.
+Mengirim ACK frame ID = 169.
+
+Frame ID = 168 diterima.
+Mengirim ACK frame ID = 168.
+
+Frame ID = 170 diterima.
+Mengirim ACK frame ID = 170.
+
+Frame ID = 171 diterima.
+Mengirim ACK frame ID = 171.
+
+Frame ID = 172 diterima.
+Mengirim ACK frame ID = 172.
+
+Frame ID = 173 diterima.
+Mengirim ACK frame ID = 173.
+
+Frame ID = 174 diterima.
+Mengirim ACK frame ID = 174.
+
+Frame ID = 175 diterima.
+Mengirim ACK frame ID = 175.
+
+Frame ID = 176 diterima.
+Mengirim ACK frame ID = 176.
+
+Frame ID = 177 diterima.
+Mengirim ACK frame ID = 177.
+
+Frame ID = 178 diterima.
+Mengirim ACK frame ID = 178.
+
+Frame ID = 179 diterima.
+Mengirim ACK frame ID = 179.
+
+Frame ID = 180 diterima.
+Mengirim ACK frame ID = 180.
+
+Frame ID = 181 diterima.
+Mengirim ACK frame ID = 181.
+
+Frame ID = 182 diterima.
+Mengirim ACK frame ID = 182.
+
+Frame ID = 183 diterima.
+Mengirim ACK frame ID = 183.
+
+Frame ID = 184 diterima.
+Mengirim ACK frame ID = 184.
+
+Frame ID = 185 diterima.
+Mengirim ACK frame ID = 185.
+
+Frame ID = 186 diterima.
+Mengirim ACK frame ID = 186.
+
+Frame ID = 187 diterima.
+Mengirim ACK frame ID = 187.
+
+Frame ID = 188 diterima.
+Mengirim ACK frame ID = 188.
+
+Frame ID = 189 diterima.
+Mengirim ACK frame ID = 189.
+
+Frame ID = 190 diterima.
+Mengirim ACK frame ID = 190.
+
+Frame ID = 191 diterima.
+Mengirim ACK frame ID = 191.
+
+Frame ID = 192 diterima.
+Mengirim ACK frame ID = 192.
+
+Frame ID = 193 diterima.
+Mengirim ACK frame ID = 193.
+
+Frame ID = 194 diterima.
+Mengirim ACK frame ID = 194.
+
+Frame ID = 195 diterima.
+Mengirim ACK frame ID = 195.
+
+Frame ID = 194 diterima.
+Mengirim ACK frame ID = 194.
+
+Frame ID = 196 diterima.
+Mengirim ACK frame ID = 196.
+
+Frame ID = 197 diterima.
+Mengirim ACK frame ID = 197.
+
+Frame ID = 198 diterima.
+Mengirim ACK frame ID = 198.
+
+Frame ID = 199 diterima.
+Mengirim ACK frame ID = 199.
+
+Frame ID = 198 diterima.
+Mengirim ACK frame ID = 198.
+
+Frame ID = 200 diterima.
+Mengirim ACK frame ID = 200.
+
+Frame ID = 201 diterima.
+Mengirim ACK frame ID = 201.
+
+Frame ID = 202 diterima.
+Mengirim ACK frame ID = 202.
+
+Frame ID = 203 diterima.
+Mengirim ACK frame ID = 203.
+
+Frame ID = 204 diterima.
+Mengirim ACK frame ID = 204.
+
+Frame ID = 205 diterima.
+Mengirim ACK frame ID = 205.
+
+Frame ID = 204 diterima.
+Mengirim ACK frame ID = 204.
+
+Frame ID = 206 diterima.
+Mengirim ACK frame ID = 206.
+
+Frame ID = 207 diterima.
+Mengirim ACK frame ID = 207.
+
+Frame ID = 208 diterima.
+Mengirim ACK frame ID = 208.
+
+Frame ID = 209 diterima.
+Mengirim ACK frame ID = 209.
+
+Frame ID = 210 diterima.
+Mengirim ACK frame ID = 210.
+
+Frame ID = 211 diterima.
+Mengirim ACK frame ID = 211.
+
+Frame ID = 210 diterima.
+Mengirim ACK frame ID = 210.
+
+Frame ID = 212 diterima.
+Mengirim ACK frame ID = 212.
+
+Frame ID = 213 diterima.
+Mengirim ACK frame ID = 213.
+
+Frame ID = 214 diterima.
+Mengirim ACK frame ID = 214.
+
+Frame ID = 215 diterima.
+Mengirim ACK frame ID = 215.
+
+Frame ID = 216 diterima.
+Mengirim ACK frame ID = 216.
+
+Frame ID = 217 diterima.
+Mengirim ACK frame ID = 217.
+
+Frame ID = 218 diterima.
+Mengirim ACK frame ID = 218.
+
+Frame ID = 219 diterima.
+Mengirim ACK frame ID = 219.
+
+Frame ID = 220 diterima.
+Mengirim ACK frame ID = 220.
+
+Frame ID = 221 diterima.
+Mengirim ACK frame ID = 221.
+
+Frame ID = 222 diterima.
+Mengirim ACK frame ID = 222.
+
+Frame ID = 223 diterima.
+Mengirim ACK frame ID = 223.
+
+Frame ID = 222 diterima.
+Mengirim ACK frame ID = 222.
+
+Frame ID = 224 diterima.
+Mengirim ACK frame ID = 224.
+
+Frame ID = 225 diterima.
+Mengirim ACK frame ID = 225.
+
+Frame ID = 226 diterima.
+Mengirim ACK frame ID = 226.
+
+Frame ID = 227 diterima.
+Mengirim ACK frame ID = 227.
+
+Frame ID = 228 diterima.
+Mengirim ACK frame ID = 228.
+
+Frame ID = 229 diterima.
+Mengirim ACK frame ID = 229.
+
+Frame ID = 230 diterima.
+Mengirim ACK frame ID = 230.
+
+Frame ID = 231 diterima.
+Mengirim ACK frame ID = 231.
+
+Frame ID = 230 diterima.
+Mengirim ACK frame ID = 230.
+
+Frame ID = 232 diterima.
+Mengirim ACK frame ID = 232.
+
+Frame ID = 233 diterima.
+Mengirim ACK frame ID = 233.
+
+Frame ID = 234 diterima.
+Mengirim ACK frame ID = 234.
+
+Frame ID = 235 diterima.
+Mengirim ACK frame ID = 235.
+
+Frame ID = 236 diterima.
+Mengirim ACK frame ID = 236.
+
+Frame ID = 237 diterima.
+Mengirim ACK frame ID = 237.
+
+Frame ID = 236 diterima.
+Mengirim ACK frame ID = 236.
+
+Frame ID = 238 diterima.
+Mengirim ACK frame ID = 238.
+
+Frame ID = 239 diterima.
+Mengirim ACK frame ID = 239.
+
+Frame ID = 240 diterima.
+Mengirim ACK frame ID = 240.
+
+Frame ID = 241 diterima.
+Mengirim ACK frame ID = 241.
+
+Frame ID = 242 diterima.
+Mengirim ACK frame ID = 242.
+
+Frame ID = 243 diterima.
+Mengirim ACK frame ID = 243.
+
+Frame ID = 244 diterima.
+Mengirim ACK frame ID = 244.
+
+Frame ID = 245 diterima.
+Mengirim ACK frame ID = 245.
+
+Frame ID = 246 diterima.
+Mengirim ACK frame ID = 246.
+
+Frame ID = 247 diterima.
+Mengirim ACK frame ID = 247.
+
+Frame ID = 248 diterima.
+Mengirim ACK frame ID = 248.
+
+Frame ID = 249 diterima.
+Mengirim ACK frame ID = 249.
+
+Frame ID = 250 diterima.
+Mengirim ACK frame ID = 250.
+
+Frame ID = 251 diterima.
+Mengirim ACK frame ID = 251.
+
+Frame ID = 252 diterima.
+Mengirim ACK frame ID = 252.
+
+Frame ID = 253 diterima.
+Mengirim ACK frame ID = 253.
+
+Frame ID = 254 diterima.
+Mengirim ACK frame ID = 254.
+
+Frame ID = 255 diterima.
+Mengirim ACK frame ID = 255.
+
+Frame ID = 256 diterima.
+Mengirim ACK frame ID = 256.
+
+Frame ID = 257 diterima.
+Mengirim ACK frame ID = 257.
+
+Frame ID = 258 diterima.
+Mengirim ACK frame ID = 258.
+
+Frame ID = 259 diterima.
+Mengirim ACK frame ID = 259.
+
+Frame ID = 258 diterima.
+Mengirim ACK frame ID = 258.
+
+Frame ID = 256 diterima.
+Invalid checksum, mengirim NAK frame ID = 256.
+
+Frame ID = 261 diterima.
+Mengirim ACK frame ID = 261.
+
+Frame ID = 260 diterima.
+Mengirim ACK frame ID = 260.
+
+Frame ID = 262 diterima.
+Mengirim ACK frame ID = 262.
+
+Frame ID = 263 diterima.
+Mengirim ACK frame ID = 263.
+
+Frame ID = 264 diterima.
+Mengirim ACK frame ID = 264.
+
+Data diterima:
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he hohahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he hohahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he hohahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he hohahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he hohahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he hohahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+hahaha
+hihihihi
+huhuhuhuhu
+hehehehehehe
+hohohohohohoho
+ha hi hu he ho
+ he ho
+ he ho
+ he ho
+ he ho
+ he ho
+ he ho
+ he ho
+ he ho
+ he ho
+ he ho
+ he ho
+ he ho
+

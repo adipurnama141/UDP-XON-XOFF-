@@ -23,6 +23,9 @@ ArrayFrame receivedFrames; //frame-frame yg benar dan terurut
 int isFrameComplete = 0; //apakah frame sedang di proses
 int bytesProcessed = 0; //sudah berapa byte yang di proses
 pthread_mutex_t lock; //pengiriman ACK/NAK di lock agar data terurut
+int nFrame  = 0;
+int stopConnectionSignal = 0;
+
 
 unsigned char countChecksum(unsigned char* ptr, size_t sz) {
     unsigned char chk = 0;
@@ -138,6 +141,12 @@ void* frameHandler() {
             }
             frameID = *((int*) byteID);
             printf("\nFrame ID = %d diterima.\n", frameID);
+
+            if ((nFrame -1) < frameID) {
+                nFrame = frameID;
+                nFrame += 1;
+            }
+
             if (getByte() == STX ) {
                 insertArray(&tempFrame, STX);
                 //ambil data
@@ -156,6 +165,7 @@ void* frameHandler() {
                                 thisFrame.text[i] = tempFrame.data[i + 6]; //data pertama ada di indeks 6
                             }
                             insertArrayFrame(&receivedFrames, thisFrame);
+                            //nFrame++;
                             sendNACK(frameID, ACK);
                         } else { //checksum berbeda
                             printf("Invalid checksum, ");
@@ -211,6 +221,7 @@ int main(int argc, char* argv[]) {
         pthread_t tFrameHandler;
         int countByte = 0; //counter karakter
         char rcvchar; //tempat menampung karakter yang diterima
+        int endcounter = 0;
         //loop sampai break di ENDFILE
         while (1) {
             //menerima 1 karakter
@@ -220,22 +231,73 @@ int main(int argc, char* argv[]) {
                     mulai = 1;
                     pthread_create(&tByteHandler, NULL, byteHandler, "byteHandler"); //jalankan thread 
                     pthread_create(&tFrameHandler, NULL, frameHandler, "frameHandler"); //jalankan thread
-                } else if ((rcvchar == ENDFILE) && isFrameComplete) {
+                }
+                else if ( rcvchar == ENDFILE ) {
+                    //printf("END!\n");
+                    endcounter++;
+                    if ((endcounter == 4) && isFrameComplete) {
+                                pthread_cancel(tByteHandler);
+                            pthread_cancel(tFrameHandler);
+                            //print data
+                            printf("\nData diterima:\n");
+                            int i;
+                            int j;
+                            printf("%d Frame \n", nFrame);
+                            for (i = 0; i < nFrame ; i++) {
+                                FrameData temp;
+                                int k = 0;
+                                int isStop = 0;
+
+
+                                while ((k < receivedFrames.used) && (!isStop)){
+                                    if (receivedFrames.data[k].id == i) {
+                                        temp = receivedFrames.data[k];
+                                        for (j = 0; j < temp.length; j++) {
+                                            printf("%c", temp.text[j]);
+                                        }
+                                        isStop = 1;
+                                    }
+                                    k++;
+                                }
+
+                            }
+                            printf("\n");
+                            break;
+
+                    }
+
+                } 
+                else if ( stopConnectionSignal && isFrameComplete) {
                     pthread_cancel(tByteHandler);
                     pthread_cancel(tFrameHandler);
                     //print data
                     printf("\nData diterima:\n");
                     int i;
                     int j;
-                    for (i = 0; i < receivedFrames.used; i++) {
-                        for (int j = 0; j < receivedFrames.data[i].length; j++) {
-                            printf("%c", receivedFrames.data[i].text[j]);
+                    printf("%d Frame \n", nFrame);
+                    for (i = 0; i < nFrame ; i++) {
+                        FrameData temp;
+                        int k = 0;
+                        int isStop = 0;
+
+
+                        while ((k < receivedFrames.used) && (!isStop)){
+                            if (receivedFrames.data[k].id == i) {
+                                temp = receivedFrames.data[k];
+                                for (j = 0; j < temp.length; j++) {
+                                    printf("%c", temp.text[j]);
+                                }
+                                isStop = 1;
+                            }
+                            k++;
                         }
+
                     }
                     printf("\n");
                     break;
                 } else {
                     if (isBufferUpLimit()) { //transmit menunda pengiriman
+                        endcounter = 0;
                         printf("Buffer > minimum upperlimit\n");
                         printf("Mengirim XOFF.\n");
                         sendByte(XOFF);
